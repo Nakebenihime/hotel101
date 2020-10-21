@@ -1,0 +1,17 @@
+spring:
+  profiles: qualification
+welcome:
+  env: qualification
+  message: ¡Mensaje de bienvenida del archivo de propiedades! Bienvenido a ${welcome.env}!
+server:
+  port: 8080
+management:
+  info:
+    build:
+      enabled: true
+    git:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"

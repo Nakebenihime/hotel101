@@ -1,0 +1,17 @@
+spring:
+  profiles: production
+welcome:
+  env: production
+  message: Welcome message from property file! Welcome to ${welcome.env}!
+server:
+  port: 8080
+management:
+  info:
+    build:
+      enabled: true
+    git:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"

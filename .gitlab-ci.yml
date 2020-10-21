@@ -1,0 +1,110 @@
+stages:
+  - preparation
+  - test
+  - build
+  - deploy
+
+variables:
+  DOCKER_DRIVER: overlay2
+  MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
+  MAVEN_CLI_OPTS: "--batch-mode --errors --fail-at-end --show-version -DinstallAtEnd=true -DdeployAtEnd=true"
+  IMAGE_NAME: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+  IMAGE_TAG: ${CI_COMMIT_REF_SLUG}
+  REF: ${CI_COMMIT_REF_NAME}
+
+variables_job:
+  stage: preparation
+  image: maven:3.6.3-jdk-11-slim
+  script:
+    - echo ${REF}
+    - echo ${IMAGE_TAG}
+    - echo ${IMAGE_NAME}
+
+maven_build_job:
+  stage: test
+  image: maven:3.6.3-jdk-11-slim
+  script:
+    - mvn $MAVEN_CLI_OPTS compile
+  artifacts:
+    expire_in: 10 min
+    paths:
+      - target/
+      - "*/target"
+
+maven_test_job:
+  stage: test
+  image: maven:3.6.3-jdk-11-slim
+  script:
+    - find . -name "*.class" -exec touch {} \+
+    - mvn $MAVEN_CLI_OPTS test
+
+docker_build_job:
+  stage: build
+  image: docker:19.03.13-dind
+  services:
+    - name: docker:19.03.13-dind
+  before_script:
+    - docker login -u ${CI_USER} -p ${CI_TOKEN} ${CI_REGISTRY}
+  script:
+    - docker build -t ${CI_REGISTRY}/nakebenihime/deployment-workshop/greeting-service ./deployment-workshop/greeting
+    - docker push ${CI_REGISTRY}/nakebenihime/deployment-workshop/greeting-service
+  after_script:
+    - docker logout ${CI_REGISTRY}
+
+#ssh-deploy-qualification:
+#  stage: deploy
+#  image: kroniak/ssh-client
+#  variables:
+#    SPRING_PROFILES_ACTIVE: qualification
+#  environment:
+#    name: qualification
+#    url: x
+#  only:
+#    refs:
+#      - branches
+#    changes:
+#      - greeting/**/*
+#  except:
+#    refs:
+#      - master
+#  before_script:
+#    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+#    - eval $(ssh-agent -s)
+#    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+#    - mkdir -p ~/.ssh
+#    - chmod 700 ~/.ssh
+#    - ssh-keyscan -t rsa ${SSH_REMOTE_HOST} >> ~/.ssh/known_hosts
+#    - chmod 644 ~/.ssh/known_hosts
+#  script:
+#    - ssh deployer@${SSH_REMOTE_HOST} "docker login -u ${CI_USER} -p ${CI_TOKEN} ${CI_REGISTRY}"
+#    - ssh deployer@${SSH_REMOTE_HOST} "docker pull ${CI_REGISTRY}/nakebenihime/deployment-workshop/greeting-service"
+#    - ssh deployer@${SSH_REMOTE_HOST} 'docker stop $(docker ps -aq)' || true
+#    - ssh deployer@${SSH_REMOTE_HOST} "docker run  --rm -d -p ${PORT}:8080 --name ${APP_NAME} -e SPRING_PROFILES_ACTIVE=${SPRING_ACTIVE_PROFILE} ${CI_REGISTRY}/nakebenihime/deployment-workshop/greeting-service"
+#
+#ssh-deploy-production:
+#  stage: deploy
+#  image: kroniak/ssh-client
+#  variables:
+#    SPRING_PROFILES_ACTIVE: production
+#  environment:
+#    name: production
+#    url: x
+#  only:
+#    refs:
+#      - master
+#    changes:
+#      - greeting/**/*
+#  before_script:
+#    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+#    - eval $(ssh-agent -s)
+#    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+#    - mkdir -p ~/.ssh
+#    - chmod 700 ~/.ssh
+#    - ssh-keyscan -t rsa ${SSH_REMOTE_HOST} >> ~/.ssh/known_hosts
+#    - chmod 644 ~/.ssh/known_hosts
+#  script:
+#    - ssh deployer@${SSH_REMOTE_HOST} "docker login -u ${CI_USER} -p ${CI_TOKEN} ${CI_REGISTRY}"
+#    - ssh deployer@${SSH_REMOTE_HOST} "docker pull ${CI_REGISTRY}/nakebenihime/deployment-workshop/greeting-service"
+#    - ssh deployer@${SSH_REMOTE_HOST} 'docker stop $(docker ps -aq)' || true
+#    - ssh deployer@${SSH_REMOTE_HOST} "docker run  --rm -d -p ${PORT}:8080 --name ${APP_NAME} -e SPRING_PROFILES_ACTIVE=${SPRING_ACTIVE_PROFILE} ${CI_REGISTRY}/nakebenihime/deployment-workshop/greeting-service"
+#
