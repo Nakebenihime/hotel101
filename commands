@@ -1,11 +1,11 @@
 # packaging the application
-mvn clean package -pl greeting -amd -DskipTests=true -Dspring.profiles.active=production
+mvn clean package -pl greeting -amd -DskipTests=true -Dspring.profiles.active=master
 
-# running the application SPRING_ACTIVE_PROFILE = production || qualification
+# running the application SPRING_ACTIVE_PROFILE = master || qualification
 java -jar -Dspring.profiles.active=$SPRING_ACTIVE_PROFILE greeting\target\greeting-0.0.1-SNAPSHOT.jar
 
 # build docker application
-docker build --build-arg SPRING_ACTIVE_PROFILE=production -t greeting -f greeting\Dockerfile
+docker build --build-arg SPRING_ACTIVE_PROFILE=production -t greeting -f greeting\Dockerfile .
 
 # run docker application
 docker run --rm --name deploy-greeting -p 8080:8080 -e SPRING_PROFILES_ACTIVE=production -it greeting
