@@ -31,7 +31,7 @@ maven_test_job:
     changes:
       - greeting/**/*
   dependencies:
-    - setup
+    - maven_setup_job
   script:
     - mvn $MAVEN_CLI_OPTS test -B -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}
 
@@ -46,7 +46,7 @@ maven_build_job:
     changes:
       - greeting/**/*
   dependencies:
-    - test
+    - maven_test_job
   script:
     - mvn $MAVEN_CLI_OPTS clean package -DskipTests=true -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}
   artifacts:
