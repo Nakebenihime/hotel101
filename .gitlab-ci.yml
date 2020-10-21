@@ -25,7 +25,7 @@ maven_build_job:
     changes:
       - greeting/**/*
   script:
-    - mvn $MAVEN_CLI_OPTS clean package -DskipTests=true -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}
+    - mvn $MAVEN_CLI_OPTS clean package -B -DskipTests=true
   artifacts:
     when: on_success
     expire_in: 1 day
@@ -45,7 +45,7 @@ docker_build_job:
   before_script:
     - docker login -u ${CI_USER} -p ${CI_TOKEN} ${CI_REGISTRY}
   script:
-    - docker build --build-arg SPRING_ACTIVE_PROFILE=${SPRING_PROFILES_ACTIVE} -t ${CI_REGISTRY}/nakebenihime/deployment-workshop/greeting-webservice -f greeting/Dockerfile .
+    - docker build -t ${CI_REGISTRY}/nakebenihime/deployment-workshop/greeting-webservice -f greeting/Dockerfile .
     - docker push ${CI_REGISTRY}/nakebenihime/deployment-workshop/greeting-webservice
   after_script:
     - docker logout ${CI_REGISTRY}
