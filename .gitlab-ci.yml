@@ -1,44 +1,63 @@
 stages:
-  - preparation
+  - setup
   - test
   - build
   - deploy
 
 variables:
-  DOCKER_DRIVER: overlay2
   MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
   MAVEN_CLI_OPTS: "--batch-mode --errors --fail-at-end --show-version -DinstallAtEnd=true -DdeployAtEnd=true"
   IMAGE_NAME: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
-  IMAGE_TAG: ${CI_COMMIT_REF_SLUG}
-  REF: ${CI_COMMIT_REF_NAME}
+  SPRING_PROFILES_ACTIVE: ${CI_COMMIT_REF_SLUG}
 
-variables_job:
-  stage: preparation
+maven_setup_job:
+  stage: setup
   image: maven:3.6.3-jdk-11-slim
-  script:
-    - echo ${REF}
-    - echo ${IMAGE_TAG}
-    - echo ${IMAGE_NAME}
-
-maven_build_job:
-  stage: test
-  image: maven:3.6.3-jdk-11-slim
-  script:
-    - mvn $MAVEN_CLI_OPTS compile
-  artifacts:
-    expire_in: 10 min
+  cache:
+    key: maven:v1
     paths:
-      - target/
-      - "*/target"
+      - .m2/repository/
+  script:
+    - echo "Setup is done !"
 
 maven_test_job:
   stage: test
   image: maven:3.6.3-jdk-11-slim
+  cache:
+    key: maven:v1
+    paths:
+      - .m2/repository/
+  only:
+    changes:
+      - greeting/**/*
+  dependencies:
+    - setup
   script:
-    - find . -name "*.class" -exec touch {} \+
-    - mvn $MAVEN_CLI_OPTS test
+    - mvn $MAVEN_CLI_OPTS test -B -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}
+
+maven_build_job:
+  stage: build
+  image: maven:3.6.3-jdk-11-slim
+  cache:
+    key: maven:v1
+    paths:
+      - .m2/repository/
+  only:
+    changes:
+      - greeting/**/*
+  dependencies:
+    - test
+  script:
+    - mvn $MAVEN_CLI_OPTS clean package -DskipTests=true -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}
+  artifacts:
+    when: on_success
+    expire_in: 1 day
+    paths:
+      - greeting/target/*.jar
 
 docker_build_job:
+  variables:
+    DOCKER_DRIVER: overlay2
   stage: build
   image: docker:19.03.13-dind
   services:
@@ -46,8 +65,8 @@ docker_build_job:
   before_script:
     - docker login -u ${CI_USER} -p ${CI_TOKEN} ${CI_REGISTRY}
   script:
-    - docker build -t ${CI_REGISTRY}/nakebenihime/deployment-workshop/greeting-service ./deployment-workshop/greeting
-    - docker push ${CI_REGISTRY}/nakebenihime/deployment-workshop/greeting-service
+    - docker build -t ${CI_REGISTRY}/nakebenihime/deployment-workshop/greeting-webservice ./deployment-workshop/greeting
+    - docker push ${CI_REGISTRY}/nakebenihime/deployment-workshop/greeting-webservice
   after_script:
     - docker logout ${CI_REGISTRY}
 

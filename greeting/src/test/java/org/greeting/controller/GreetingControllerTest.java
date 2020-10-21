@@ -2,9 +2,12 @@ package org.greeting.controller;
 
 import org.greeting.model.Greeting;
 import org.greeting.service.GreetingService;
+import org.junit.Before;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.annotation.IfProfileValue;
@@ -12,13 +15,16 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.DisabledIf;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(controllers = GreetingController.class)
+@SpringBootTest
+@AutoConfigureMockMvc
 class GreetingControllerTest {
 
     private MockMvc mvc;
@@ -33,7 +39,7 @@ class GreetingControllerTest {
 
     @DisabledIf(expression = "#{systemProperties['spring.profiles.active'].contains('qualification')}")
     @Test
-    void greeting_production_environment() throws Exception {
+    void greeting_master_environment() throws Exception {
         final String URI = "/api/v1/greetings";
         final String PAYLOAD = "Welcome message from property file! Welcome to production";
 
@@ -47,7 +53,7 @@ class GreetingControllerTest {
                 .andExpect(jsonPath("$.payload").value(PAYLOAD));
     }
 
-    @DisabledIf(expression = "#{systemProperties['spring.profiles.active'].contains('production')}")
+    @DisabledIf(expression = "#{systemProperties['spring.profiles.active'].contains('master')}")
     @Test
     void greeting_qualification_environment() throws Exception {
         final String URI = "/api/v1/greetings";

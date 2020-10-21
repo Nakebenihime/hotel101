@@ -1,5 +1,5 @@
 spring:
-  profiles: production
+  profiles: master
 welcome:
   env: production
   message: Welcome message from property file! Welcome to ${welcome.env}!
