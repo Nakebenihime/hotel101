@@ -36,11 +36,12 @@ docker_build_job:
   variables:
     DOCKER_DRIVER: overlay2
   stage: deploy
-  dependencies:
-    - maven_build_job
   image: docker:19.03.13-dind
   services:
     - name: docker:19.03.13-dind
+  only:
+    changes:
+      - greeting/**/*
   before_script:
     - docker login -u ${CI_USER} -p ${CI_TOKEN} ${CI_REGISTRY}
   script:
