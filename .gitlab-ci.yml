@@ -43,9 +43,9 @@ docker_build_job:
     changes:
       - greeting/**/*
   before_script:
-    - docker login -u ${CI_USER} -p ${CI_TOKEN} ${CI_REGISTRY}
+    - docker login -u ${CI_USER} --password-stdin ${CI_TOKEN} ${CI_REGISTRY}
   script:
-    - docker build -t ${CI_REGISTRY}/nakebenihime/deployment-workshop/greeting-webservice ./deployment-workshop/greeting
+    - docker build -t ${CI_REGISTRY}/nakebenihime/deployment-workshop/greeting-webservice ./greeting
     - docker push ${CI_REGISTRY}/nakebenihime/deployment-workshop/greeting-webservice
   after_script:
     - docker logout ${CI_REGISTRY}
