@@ -1,6 +1,7 @@
+image: maven:3.6.3-jdk-11-slim
 stages:
-  - test
   - build
+  - test
   - deploy
 
 variables:
@@ -9,28 +10,30 @@ variables:
   IMAGE_NAME: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
   SPRING_PROFILES_ACTIVE: ${CI_COMMIT_REF_SLUG}
 
-maven_test_job:
-  stage: test
-  image: maven:3.6.3-jdk-11-slim
-  only:
-    changes:
-      - greeting/**/*
-  script:
-    - mvn $MAVEN_CLI_OPTS test -B -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}
+cache:
+  paths:
+    - $CI_PROJECT_DIR/.m2/repository
 
 maven_build_job:
   stage: build
-  image: maven:3.6.3-jdk-11-slim
   only:
     changes:
       - greeting/**/*
   script:
-    - mvn $MAVEN_CLI_OPTS clean package -B -DskipTests=true
+    - mvn $MAVEN_CLI_OPTS clean package -DskipTests
   artifacts:
     when: on_success
-    expire_in: 1 day
+    expire_in: 10 min
     paths:
       - greeting/target/*.jar
+
+maven_test_job:
+  stage: test
+  only:
+    changes:
+      - greeting/**/*
+  script:
+    - mvn $MAVEN_CLI_OPTS verify -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}
 
 docker_build_job:
   variables:
@@ -44,6 +47,7 @@ docker_build_job:
       - greeting/**/*
   before_script:
     - docker login -u ${CI_USER} -p ${CI_TOKEN} ${CI_REGISTRY}
+    - docker info
   script:
     - docker build -t ${CI_REGISTRY}/nakebenihime/deployment-workshop/greeting-webservice -f greeting/Dockerfile .
     - docker push ${CI_REGISTRY}/nakebenihime/deployment-workshop/greeting-webservice
