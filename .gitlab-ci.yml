@@ -10,6 +10,18 @@ variables:
   IMAGE_NAME: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
   SPRING_PROFILES_ACTIVE: ${CI_COMMIT_REF_SLUG}
 
+setup_job:
+  stage: setup
+  variables:
+    IMAGE_NAME: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+    DOCKER_BUILD_ID: ${CI_COMMIT_REF_NAME}_${CI_COMMIT_SHORT_SHA}
+    IMAGE_TAG: ${CI_COMMIT_REF_SLUG}
+  script:
+    - echo ${IMAGE_NAME}
+    - echo ${DOCKER_BUILD_ID}
+    - echo ${IMAGE_TAG}
+  when: manual
+
 cache:
   paths:
     - $CI_PROJECT_DIR/.m2/repository
