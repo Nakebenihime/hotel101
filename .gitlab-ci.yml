@@ -79,8 +79,8 @@ maven_release_job:
     ##
     ## Optionally, set the git username and email
     ##
-    - git config --global user.name ${RELEASE_USER_NAME}
-    - git config --global user.email ${RELEASE_USER_EMAIL}
+    #    - git config --global user.name ${RELEASE_USER_NAME}
+    #    - git config --global user.email ${RELEASE_USER_EMAIL}
   script:
     - ssh git@gitlab.com
     - git clone git@gitlab.com:Nakebenihime/deployment-workshop.git
