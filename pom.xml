@@ -24,7 +24,14 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
+        <project.scm.id>gitlab.repository</project.scm.id>
     </properties>
+
+    <scm>
+        <connection>scm:git:https://gitlab.com/Nakebenihime/deployment-workshop.git</connection>
+        <url>https://gitlab.com/Nakebenihime/deployment-workshop</url>
+        <developerConnection>scm:git:https://gitlab.com/Nakebenihime/deployment-workshop.git</developerConnection>
+    </scm>
 
     <dependencies>
         <dependency>

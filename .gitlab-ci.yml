@@ -3,6 +3,7 @@ stages:
   - setup
   - build
   - test
+  - release
   - deploy
 
 variables:
@@ -21,7 +22,7 @@ setup_job:
     - echo ${IMAGE_NAME}
     - echo ${DOCKER_BUILD_ID}
     - echo ${IMAGE_TAG}
-    - echo ${git.closest.tag.name}
+    - echo ${CI_BUILD_REF_NAME}
   when: manual
 
 cache:
@@ -48,6 +49,46 @@ maven_test_job:
       - greeting/**/*
   script:
     - mvn $MAVEN_CLI_OPTS verify -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}
+
+maven_release_job:
+  stage: release
+  before_script:
+    ##
+    ## Install ssh-agent if not already installed, it is required by Docker.
+    ## (change apt-get to yum if you use an RPM-based image)
+    ##
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    ##
+    ## Run ssh-agent (inside the build environment)
+    ##
+    - eval $(ssh-agent -s)
+    ##
+    ## Add the SSH key stored in SSH_PRIVATE_KEY variable to the agent store
+    ##
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    ##
+    ## Create the SSH directory and give it the right permissions
+    ##
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    ##
+    ## Use ssh-keyscan to scan the keys of your private server
+    ##
+    - ssh-keyscan -t rsa ${REMOTE_HOST} >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+    ##
+    ## Optionally, set the git username and email
+    ##
+    - git config --global user.name ${RELEASE_USER_NAME}
+    - git config --global user.email ${RELEASE_USER_EMAIL}
+  script:
+    - ssh git@gitlab.com
+    - git clone git@gitlab.com:Nakebenihime/deployment-workshop.git
+#   - git remote set-url origin ssh://git@gitlab.com:Nakebenihime/deployment-workshop.git ${GITLAB_REPOSITORY}
+#   - mvn $MAVEN_CLI_OPTS -s ${MAVEN_SETTINGS_XML} release:clean release:prepare release:perform -DreleaseVersion=${RELEASE_VERSION} -DdevelopmentVersion=${NEXT_SNAPSHOT_VERSION}
+  when: manual
+  only:
+    - master
 
 docker_build_job:
   variables:
