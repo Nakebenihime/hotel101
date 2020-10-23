@@ -51,7 +51,6 @@ maven_test_job:
     - mvn $MAVEN_CLI_OPTS verify -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}
 
 maven_release_job:
-  image: maven:3.6.3-jdk-11-slim
   stage: release
   before_script:
     ##
@@ -87,7 +86,7 @@ maven_release_job:
     - git config --global user.name ${RELEASE_USER_NAME}
     - git config --global user.email ${RELEASE_USER_EMAIL}
   script:
-    - ssh -tt git@gitlab.com
+    - git remote -v
 #   - git clone git@gitlab.com:Nakebenihime/deployment-workshop.git {SSH_GIT_URL}
 #   - git remote set-url origin ssh://git@gitlab.com:Nakebenihime/deployment-workshop.git ${GITLAB_REPOSITORY}
 #   - mvn $MAVEN_CLI_OPTS -s ${MAVEN_SETTINGS_XML} release:clean release:prepare release:perform -DreleaseVersion=${RELEASE_VERSION} -DdevelopmentVersion=${NEXT_SNAPSHOT_VERSION}
