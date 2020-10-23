@@ -10,18 +10,16 @@ variables:
   MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
   MAVEN_CLI_OPTS: "--batch-mode --errors --fail-at-end --show-version -DinstallAtEnd=true -DdeployAtEnd=true"
   IMAGE_NAME: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
-  SPRING_PROFILES_ACTIVE: ${CI_COMMIT_REF_SLUG}
+  SPRING_PROFILES_ACTIVE: ${CI_COMMIT_REF_NAME}
 
 setup_job:
   stage: setup
   variables:
     IMAGE_NAME: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
     DOCKER_BUILD_ID: ${CI_COMMIT_REF_NAME}_${CI_COMMIT_SHORT_SHA}
-    IMAGE_TAG: ${CI_COMMIT_REF_SLUG}
   script:
     - echo ${IMAGE_NAME}
     - echo ${DOCKER_BUILD_ID}
-    - echo ${IMAGE_TAG}
     - echo ${CI_BUILD_REF_NAME}
   when: manual
 
@@ -86,10 +84,8 @@ maven_release_job:
     - git config --global user.name ${RELEASE_USER_NAME}
     - git config --global user.email ${RELEASE_USER_EMAIL}
   script:
-    - git remote -v
-#   - git clone git@gitlab.com:Nakebenihime/deployment-workshop.git {SSH_GIT_URL}
-#   - git remote set-url origin ssh://git@gitlab.com:Nakebenihime/deployment-workshop.git ${GITLAB_REPOSITORY}
-#   - mvn $MAVEN_CLI_OPTS -s ${MAVEN_SETTINGS_XML} release:clean release:prepare release:perform -DreleaseVersion=${RELEASE_VERSION} -DdevelopmentVersion=${NEXT_SNAPSHOT_VERSION}
+    - git checkout -B ${CI_BUILD_REF_NAME}
+    - mvn $MAVEN_CLI_OPTS -s ${MAVEN_SETTINGS_XML} release:clean release:prepare release:perform -DreleaseVersion=${RELEASE_VERSION} -DdevelopmentVersion=${NEXT_SNAPSHOT_VERSION}
   when: manual
   only:
     - master
