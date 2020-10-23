@@ -55,7 +55,7 @@ maven_release_job:
   stage: release
   before_script:
     ##
-    ## Install ssh-agent if not already installed, it is required by Docker.
+    ## Install ssh-agent if not already installed, it is required by Docker
     ## (change apt-get to yum if you use an RPM-based image)
     ##
     - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
@@ -75,14 +75,18 @@ maven_release_job:
     ##
     ## Use ssh-keyscan to scan the keys of your private server
     ##
-    - ssh-keyscan -t rsa gitlab.com >> ~/.ssh/known_hosts
+    - echo "$SSH_KNOWN_HOSTS" >> ~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
+    ##
+    ## Install git if not already installed, it is required by Docker
+    ##
+    - 'which git || (apt-get update && apt-get install -y git)'
     ##
     ## Optionally, set the git username and email
     ##
-  script:
     - git config --global user.name ${RELEASE_USER_NAME}
     - git config --global user.email ${RELEASE_USER_EMAIL}
+  script:
     - ssh -tt git@gitlab.com
 #   - git clone git@gitlab.com:Nakebenihime/deployment-workshop.git {SSH_GIT_URL}
 #   - git remote set-url origin ssh://git@gitlab.com:Nakebenihime/deployment-workshop.git ${GITLAB_REPOSITORY}
