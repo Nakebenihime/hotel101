@@ -51,6 +51,7 @@ maven_test_job:
     - mvn $MAVEN_CLI_OPTS verify -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}
 
 maven_release_job:
+  image: maven:3.6.3-jdk-11-slim
   stage: release
   before_script:
     ##
@@ -74,14 +75,14 @@ maven_release_job:
     ##
     ## Use ssh-keyscan to scan the keys of your private server
     ##
-    - ssh-keyscan -t rsa ${REMOTE_HOST} >> ~/.ssh/known_hosts
+    - ssh-keyscan -t rsa gitlab.com >> ~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
     ##
     ## Optionally, set the git username and email
     ##
+  script:
     - git config --global user.name ${RELEASE_USER_NAME}
     - git config --global user.email ${RELEASE_USER_EMAIL}
-  script:
     - ssh -tt git@gitlab.com
 #   - git clone git@gitlab.com:Nakebenihime/deployment-workshop.git {SSH_GIT_URL}
 #   - git remote set-url origin ssh://git@gitlab.com:Nakebenihime/deployment-workshop.git ${GITLAB_REPOSITORY}
