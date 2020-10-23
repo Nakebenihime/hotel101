@@ -21,6 +21,7 @@ setup_job:
     - echo ${IMAGE_NAME}
     - echo ${DOCKER_BUILD_ID}
     - echo ${IMAGE_TAG}
+    - echo ${git.closest.tag.name}
   when: manual
 
 cache:
