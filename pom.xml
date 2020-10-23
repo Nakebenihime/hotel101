@@ -87,6 +87,7 @@
                     <tagNameFormat>v@{project.version}</tagNameFormat>
                     <goals>install</goals>
                     <arguments>-DskipTests</arguments>
+                    <scmCommentPrefix>[skip ci] [maven-release-plugin]</scmCommentPrefix>
                 </configuration>
             </plugin>
         </plugins>
