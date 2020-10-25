@@ -12,9 +12,9 @@
         <relativePath /> <!-- lookup parent from repository -->
     </parent>
     <groupId>org</groupId>
-    <artifactId>deployment-workshop</artifactId>
+    <artifactId>greeting101</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>deployment-workshop</name>
+    <name>greeting101</name>
     <description>Demo project for Spring Boot</description>
 
     <properties>
