@@ -1,17 +1,20 @@
 spring:
   profiles: qualification
-welcome:
-  env: qualification
-  message: ¡Mensaje de bienvenida del archivo de propiedades! Bienvenido a ${welcome.env}!
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/hotels-${spring.profiles}
 server:
   port: 8080
-management:
+api:
   info:
-    build:
-      enabled: true
-    git:
-      enabled: true
-  endpoints:
-    web:
-      exposure:
-        include: "*"
+    title: Hotel API
+    version: 1.0.0
+    description: Hotel API is web service providing online functionality of searching and booking hotels
+  contact:
+    email: mario-dacosta@hotmail.fr
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  uri:
+    paths:
+      hotel: /api/v1/hotels
