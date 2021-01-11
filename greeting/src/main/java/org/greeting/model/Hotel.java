@@ -30,7 +30,7 @@ public class Hotel {
     private int pricePerNight;
     @Valid
     @NotNull(message = "Address is mandatory")
-    private Address Address;
+    private Address address;
     @Valid
     private List<Review> reviews;
 

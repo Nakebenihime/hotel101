@@ -14,6 +14,9 @@ import java.util.Optional;
 @Service
 public class HotelServiceImpl implements ServiceImpl<Hotel> {
 
+    private final String REPOSITORY_FETCH_ID_LOG = "Fetching hotel with id {}";
+    private final String REPOSITORY_ID_NOT_FOUND_LOG = "Hotel with id (%s) could not be found";
+
     private HotelRepository hotelRepository;
 
     @Autowired
@@ -34,9 +37,9 @@ public class HotelServiceImpl implements ServiceImpl<Hotel> {
 
     @Override
     public Hotel updateById(Hotel hotel, String id) {
-        log.info("Fetching hotel with id {}", id);
+        log.info(REPOSITORY_FETCH_ID_LOG, id);
         Hotel nhotel = this.hotelRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException(String.format("Hotel with id (%s) could not be found", id)));
+                .orElseThrow(() -> new NotFoundException(String.format(REPOSITORY_ID_NOT_FOUND_LOG, id)));
         nhotel.setName(hotel.getName());
         nhotel.setPricePerNight(hotel.getPricePerNight());
         nhotel.setAddress(hotel.getAddress());
@@ -46,17 +49,17 @@ public class HotelServiceImpl implements ServiceImpl<Hotel> {
 
     @Override
     public void deleteById(String id) {
-        log.info("Fetching hotel with id {}", id);
+        log.info(REPOSITORY_FETCH_ID_LOG, id);
         this.hotelRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException(String.format("Hotel with id (%s) could not be found", id)));
+                .orElseThrow(() -> new NotFoundException(String.format(REPOSITORY_ID_NOT_FOUND_LOG, id)));
         this.hotelRepository.deleteById(id);
     }
 
     @Override
     public Optional<Hotel> findById(String id) {
-        log.info("Fetching hotel with id {}", id);
+        log.info(REPOSITORY_FETCH_ID_LOG, id);
         this.hotelRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException(String.format("Hotel with id (%s) could not be found", id)));
+                .orElseThrow(() -> new NotFoundException(String.format(REPOSITORY_ID_NOT_FOUND_LOG, id)));
         return this.hotelRepository.findById(id);
     }
 

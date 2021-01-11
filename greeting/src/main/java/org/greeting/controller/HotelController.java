@@ -55,13 +55,13 @@ public class HotelController {
                             schema = @Schema(implementation = ApiError.class)))})
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Hotel> save(@Valid @RequestBody Hotel hotel, UriComponentsBuilder uriComponentsBuilder) {
-        this.hotelServiceImpl.save(hotel);
+        Hotel persistedHotel = this.hotelServiceImpl.save(hotel);
         UriComponents uriComponents = uriComponentsBuilder.path("/api/v1/hotels/{id}").buildAndExpand(hotel.getId());
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .contentType(MediaType.APPLICATION_JSON)
                 .location(uriComponents.toUri())
-                .body(hotel);
+                .body(persistedHotel);
     }
 
     @Operation(summary = "Get all available hotels", description = "Get all available hotels", tags = "hotel")
@@ -115,10 +115,11 @@ public class HotelController {
                             schema = @Schema(implementation = ApiError.class)))})
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Hotel> update(@Valid @RequestBody Hotel hotel, @Parameter(description = "Hotel identification number") @PathVariable String id) {
+        Hotel persistedHotel = this.hotelServiceImpl.updateById(hotel, id);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(this.hotelServiceImpl.updateById(hotel, id));
+                .body(persistedHotel);
     }
 
     @Operation(summary = "Deletes the Hotel for the given hotelId", description = "Deletes the Hotel for the given hotelId", tags = "hotel")
