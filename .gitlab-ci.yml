@@ -59,7 +59,7 @@ maven_release_job:
 docker_build_job:
   variables:
     DOCKER_DRIVER: overlay2
-  stage: deploy
+  stage: build
   image: docker:19.03.13-dind
   services:
     - name: docker:19.03.13-dind
@@ -67,10 +67,36 @@ docker_build_job:
     changes:
       - greeting/**/*
   before_script:
-    - docker info
     - docker login -u ${GITLAB_USER_LOGIN} -p ${CI_TOKEN} ${CI_REGISTRY}
   script:
     - docker build -t ${CI_REGISTRY_IMAGE}/greeting-webservice -f greeting/Dockerfile .
     - docker push ${CI_REGISTRY_IMAGE}/greeting-webservice
   after_script:
     - docker logout ${CI_REGISTRY}
+
+ssh_deploy_qualification_job:
+  stage: deploy
+  image: kroniak/ssh-client
+  tags:
+    - qualification-deploy
+  before_script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan -t rsa ${SSH_REMOTE_HOST} >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+  script:
+    - ssh ${DEPLOY_USER}@${SSH_REMOTE_HOST} 'docker login -u ${GITLAB_USER_LOGIN} -p ${CI_TOKEN} ${CI_REGISTRY}'
+    - ssh ${DEPLOY_USER}@${SSH_REMOTE_HOST} 'docker pull ${CI_REGISTRY_IMAGE}/greeting-webservice'
+    - ssh ${DEPLOY_USER}$${SSH_REMOTE_HOST} 'docker stop $(docker ps -aq)' || true
+    - ssh ${DEPLOY_USER}@${SSH_REMOTE_HOST} 'docker run  --rm -d -p 8080:8080 --name ${APP_NAME} -e SPRING_PROFILES_ACTIVE=${SPRING_ACTIVE_PROFILE} ${CI_REGISTRY_IMAGE}/greeting-webservice'
+  environment:
+    name: qualification
+    url: http://${SSH_REMOTE_HOST}
+  only:
+    refs:
+      - qualification
+    changes:
+      - greeting/**/*
