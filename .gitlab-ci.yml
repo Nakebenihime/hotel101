@@ -1,6 +1,5 @@
 image: maven:3.6.3-jdk-11-slim
 stages:
-  - setup
   - build
   - test
   - release
@@ -14,12 +13,6 @@ variables:
 cache:
   paths:
     - $CI_PROJECT_DIR/.m2/repository
-
-setup_job:
-  stage: setup
-  script:
-    - echo ${GITLAB_USER_LOGIN}
-    - echo ${CI_REGISTRY}
 
 maven_build_job:
   stage: build
@@ -64,6 +57,7 @@ maven_release_job:
     - master
 
 docker_build_job:
+  cache: { }
   variables:
     DOCKER_DRIVER: overlay2
   stage: build
@@ -74,6 +68,7 @@ docker_build_job:
     changes:
       - greeting/**/*
   before_script:
+    - docker logout registry.gitlab.com
     - docker login -u ${GITLAB_USER_LOGIN} -p ${CI_TOKEN} ${CI_REGISTRY}
   script:
     - docker build -t ${CI_REGISTRY_IMAGE}/greeting-webservice -f greeting/Dockerfile .
