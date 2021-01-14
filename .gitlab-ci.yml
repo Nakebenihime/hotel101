@@ -4,6 +4,7 @@ stages:
   - test
   - release
   - deploy
+  - cleanup
 
 variables:
   MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
@@ -13,6 +14,11 @@ variables:
 cache:
   paths:
     - $CI_PROJECT_DIR/.m2/repository
+
+cleanup_cache_job:
+  stage: cleanup
+  script:
+    - rm -rf $CI_PROJECT_DIR/.m2/repository
 
 maven_build_job:
   stage: build
@@ -57,7 +63,6 @@ maven_release_job:
     - master
 
 docker_build_job:
-  cache: { }
   variables:
     DOCKER_DRIVER: overlay2
   stage: build
