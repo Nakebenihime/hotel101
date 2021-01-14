@@ -19,6 +19,7 @@ cleanup_cache_job:
   stage: cleanup
   script:
     - rm -rf $CI_PROJECT_DIR/.m2/repository
+  when: manual
 
 maven_build_job:
   stage: build
