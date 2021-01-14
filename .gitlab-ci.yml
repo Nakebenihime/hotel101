@@ -1,5 +1,6 @@
 image: maven:3.6.3-jdk-11-slim
 stages:
+  - setup
   - build
   - test
   - release
@@ -13,6 +14,12 @@ variables:
 cache:
   paths:
     - $CI_PROJECT_DIR/.m2/repository
+
+setup_job:
+  stage: setup
+  script:
+    - echo ${GITLAB_USER_LOGIN}
+    - echo ${CI_REGISTRY}
 
 maven_build_job:
   stage: build
@@ -60,9 +67,9 @@ docker_build_job:
   variables:
     DOCKER_DRIVER: overlay2
   stage: build
-  image: docker:19.03.13-dind
+  image: docker:20.10.2-dind
   services:
-    - name: docker:19.03.13-dind
+    - name: docker:20.10.2-dind
   only:
     changes:
       - greeting/**/*
