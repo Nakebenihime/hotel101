@@ -67,14 +67,13 @@ docker_build_job:
   variables:
     DOCKER_DRIVER: overlay2
   stage: build
-  image: docker:20.10.2-dind
+  image: docker:latest
   services:
     - name: docker:20.10.2-dind
   only:
     changes:
       - greeting/**/*
   before_script:
-    - docker logout registry.gitlab.com
     - docker login -u ${GITLAB_USER_LOGIN} -p ${CI_TOKEN} ${CI_REGISTRY}
   script:
     - docker build -t ${CI_REGISTRY_IMAGE}/greeting-webservice -f greeting/Dockerfile .
@@ -101,10 +100,10 @@ ssh_deploy_qualification_job:
     - ssh ${DEPLOY_USER}$${SSH_REMOTE_HOST} 'docker stop $(docker ps -aq)' || true
     - ssh ${DEPLOY_USER}@${SSH_REMOTE_HOST} 'docker run  --rm -d -p 8080:8080 --name ${APP_NAME} -e SPRING_PROFILES_ACTIVE=${SPRING_ACTIVE_PROFILE} ${CI_REGISTRY_IMAGE}/greeting-webservice'
   environment:
-    name: qualification
+    name: master
     url: http://${SSH_REMOTE_HOST}
   only:
     refs:
-      - qualification
+      - master
     changes:
       - greeting/**/*
