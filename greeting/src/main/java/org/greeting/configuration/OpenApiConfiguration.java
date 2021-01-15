@@ -20,10 +20,16 @@ public class OpenApiConfiguration {
     private String version;
 
     @Value("${api.contact.email}")
-    private String contact;
+    private String email;
+
+    @Value("${api.contact.name}")
+    private String name;
+
+    @Value("${api.contact.url}")
+    private String repository;
 
     @Value("${api.license.name}")
-    private String name;
+    private String license;
 
     @Value("${api.license.url}")
     private String url;
@@ -39,11 +45,13 @@ public class OpenApiConfiguration {
                                 .description(description)
                                 .contact(
                                         new Contact()
-                                                .email(contact)
+                                                .name(name)
+                                                .url(repository)
+                                                .email(email)
                                 )
                                 .license(
                                         new License()
-                                                .name(name)
+                                                .name(license)
                                                 .url(url)
                                 )
                 );

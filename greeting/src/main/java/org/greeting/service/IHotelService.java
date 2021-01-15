@@ -5,17 +5,17 @@ import org.greeting.model.Hotel;
 import java.util.List;
 import java.util.Optional;
 
-public interface ServiceImpl<T> {
+public interface IHotelService {
 
-    T save(T t);
+    Hotel save(Hotel t);
 
-    List<T> findAll();
+    List<Hotel> findAll();
 
-    T updateById(T t, String id);
+    Hotel updateById(Hotel t, String id);
 
     void deleteById(String id);
 
-    Optional<T> findById(String id);
+    Optional<Hotel> findById(String id);
 
     List<Hotel> findByPricePerNightBetween(int min, int max);
 }

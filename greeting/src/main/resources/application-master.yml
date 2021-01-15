@@ -9,8 +9,10 @@ api:
   info:
     title: Hotel API
     version: 1.0.0
-    description: Hotel API is web service providing online functionality of searching and booking hotels
+    description: Hotel API is a web service providing online hotel search and booking functionalities.
   contact:
+    name: Mario DA COSTA
+    url: https://github.com/Nakebenihime
     email: mario-dacosta@hotmail.fr
   license:
     name: MIT

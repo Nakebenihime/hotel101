@@ -12,7 +12,7 @@ import java.util.Optional;
 
 @Slf4j
 @Service
-public class HotelServiceImpl implements ServiceImpl<Hotel> {
+public class HotelServiceImpl implements IHotelService {
 
     private HotelRepository hotelRepository;
 

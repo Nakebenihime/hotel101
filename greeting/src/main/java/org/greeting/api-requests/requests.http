@@ -5,8 +5,8 @@ POST {{host-url}}/hotels
 Content-Type: application/json
 
 {
-  "name": "F5",
-  "pricePerNight": 100,
+  "name": "F3",
+  "pricePerNight": 500,
   "reviews": [
     {
       "email": "mario-dacosta@hotmail.fr",
