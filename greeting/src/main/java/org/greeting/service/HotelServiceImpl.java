@@ -5,6 +5,7 @@ import org.greeting.exception.NotFoundException;
 import org.greeting.model.Hotel;
 import org.greeting.repository.HotelRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,7 +29,7 @@ public class HotelServiceImpl implements IHotelService {
     }
 
     @Override
-    public List<Hotel> findAll() {
+    public List<Hotel> findAll(Pageable pageable) {
         return this.hotelRepository.findAll();
     }
 
@@ -61,11 +62,11 @@ public class HotelServiceImpl implements IHotelService {
     }
 
     @Override
-    public List<Hotel> findByPricePerNightBetween(int min, int max) {
+    public List<Hotel> findByPricePerNightBetween(int min, int max, Pageable pageable) {
         log.info("Fetching hotels with a price per night between {} and {}", min, max);
-        if (this.hotelRepository.findByPricePerNightBetween(min, max).isEmpty()) {
+        if (this.hotelRepository.findByPricePerNightBetween(min, max, pageable).isEmpty()) {
             throw new NotFoundException(String.format("Hotels with a price per night between (%s)€ and (%s)€ could not be found", min, max));
         }
-        return this.hotelRepository.findByPricePerNightBetween(min, max);
+        return this.hotelRepository.findByPricePerNightBetween(min, max, pageable);
     }
 }

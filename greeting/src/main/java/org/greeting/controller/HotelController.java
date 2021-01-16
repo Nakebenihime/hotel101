@@ -12,6 +12,8 @@ import org.greeting.model.ApiError;
 import org.greeting.model.Hotel;
 import org.greeting.service.HotelServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -102,8 +104,8 @@ public class HotelController {
                             mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = ApiError.class)))})
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<Hotel>> getAllHotels() {
-        return ResponseEntity.ok(hotelServiceImpl.findAll());
+    public ResponseEntity<List<Hotel>> getAllHotels(@PageableDefault(page = 0, size = 5) Pageable pageable) {
+        return ResponseEntity.ok(hotelServiceImpl.findAll(pageable));
     }
 
     @Operation(
@@ -238,12 +240,12 @@ public class HotelController {
                             mediaType = MediaType.APPLICATION_JSON_VALUE,
                             schema = @Schema(implementation = ApiError.class)))})
     @GetMapping(
-            value = "/price",
+            value = "/prices",
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<Hotel>> getAllHotelsByPricePerNightMax(@RequestParam @Min(1) int min, @RequestParam @Max(9999) int max) {
+    public ResponseEntity<List<Hotel>> getAllHotelsPricePerNightBetweenMinAndMax(@RequestParam @Min(1) int min, @RequestParam @Max(9999) int max, @PageableDefault(page = 0, size = 5) Pageable pageable) {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(this.hotelServiceImpl.findByPricePerNightBetween(min, max));
+                .body(this.hotelServiceImpl.findByPricePerNightBetween(min, max, pageable));
     }
 }
