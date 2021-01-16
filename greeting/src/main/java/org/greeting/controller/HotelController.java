@@ -105,6 +105,7 @@ public class HotelController {
                             schema = @Schema(implementation = ApiError.class)))})
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<Hotel>> getAllHotels(@PageableDefault(page = 0, size = 5) Pageable pageable) {
+        log.info("GET /hotels : pageable: page {}, size {}, sort {}", pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
         return ResponseEntity.ok(hotelServiceImpl.findAll(pageable));
     }
 
@@ -134,7 +135,7 @@ public class HotelController {
             value = "/{id}",
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Optional<Hotel>> getHotelById(@Parameter(description = "hotel id") @PathVariable String id) {
-        log.info("GET /hotels/{documentId} :  hotel id {}", id);
+        log.info("GET /hotels/{id} :  hotel id {}", id);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -180,7 +181,7 @@ public class HotelController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Hotel> update(@Valid @RequestBody Hotel hotel, @Parameter(description = "hotel id") @PathVariable String id) {
-        log.info("PUT /hotels/{documentId} :  hotel id {}", id);
+        log.info("PUT /hotels/{id} :  hotel id {}", id);
         Hotel persistedHotel = this.hotelServiceImpl.updateById(hotel, id);
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -214,7 +215,7 @@ public class HotelController {
     @DeleteMapping(
             value = "/{id}")
     public ResponseEntity<Void> deleteHotelById(@Parameter(description = "hotel id") @PathVariable String id) {
-        log.info("DELETE /hotels/{documentId} :  hotel id {}", id);
+        log.info("DELETE /hotels/{id} :  hotel id {}", id);
         this.hotelServiceImpl.deleteById(id);
         return ResponseEntity
                 .status(HttpStatus.NO_CONTENT)
@@ -243,6 +244,7 @@ public class HotelController {
             value = "/prices",
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<Hotel>> getAllHotelsPricePerNightBetweenMinAndMax(@RequestParam @Min(1) int min, @RequestParam @Max(9999) int max, @PageableDefault(page = 0, size = 5) Pageable pageable) {
+        log.info("GET /hotels/prices : min {}, max {}, pageable: page {}, size {}, sort {}", min, max, pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
