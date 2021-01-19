@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <packaging>pom</packaging>
     <modules>
-        <module>greeting</module>
+        <module>hotel</module>
     </modules>
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -13,10 +13,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>org</groupId>
-    <artifactId>greeting101</artifactId>
+    <artifactId>hotel101</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>greeting101</name>
-    <description>Demo project for Spring Boot</description>
+    <name>hotel101</name>
+    <description>Hotel API is a web service providing online hotel search and booking functionalities.</description>
 
     <properties>
         <!--            java configuration                  -->
@@ -34,9 +34,9 @@
     </properties>
 
     <scm>
-        <connection>scm:git:https://github.com/Nakebenihime/greeting101.git</connection>
-        <url>https://github.com/Nakebenihime/greeting101</url>
-        <developerConnection>scm:git:https://github.com/Nakebenihime/greeting101.git</developerConnection>
+        <connection>scm:git:https://gitlab.com/Nakebenihime/hotel101.git</connection>
+        <url>https://gitlab.com/Nakebenihime/hotel101</url>
+        <developerConnection>scm:git:https://gitlab.com/Nakebenihime/hotel101.git</developerConnection>
     </scm>
 
     <dependencies>

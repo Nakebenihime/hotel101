@@ -1,0 +1,51 @@
+# API HOTEL MANAGEMENT
+
+### save()
+POST {{host-url}}/hotels
+Content-Type: application/json
+
+{
+  "name": "F1",
+  "pricePerNight": 500,
+  "reviews": [
+    {
+      "email": "mario-dacosta@hotmail.fr",
+      "rating": 5
+    }
+  ],
+  "address": {
+    "city": "Paris",
+    "country": "France"
+  }
+}
+
+### getAll()
+GET {{host-url}}//hotels
+
+### update()
+POST {{host-url}}/hotels/5d986e236bb9813cc0a5149b
+Content-Type: application/json
+
+{
+  "name": "F1",
+  "pricePerNight": 1000,
+  "reviews": [
+    {
+      "email": "mario-dacosta@hotmail.fr",
+      "rating": 5
+    }
+  ],
+  "address": {
+    "city": "Paris",
+    "country": "France"
+  }
+}
+
+### delete()
+DELETE {{host-url}}/hotels/5d986e236bb9813cc0a5149b
+
+### getByHotelId()
+GET {{host-url}}//hotels/5d986e236bb9813cc0a5149b
+
+### filter()
+GET {{host-url}}/hotels/price?min=100&max=1000

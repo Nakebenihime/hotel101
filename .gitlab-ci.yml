@@ -4,7 +4,6 @@ stages:
   - test
   - release
   - deploy
-  - cleanup
 
 variables:
   MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
@@ -15,30 +14,42 @@ cache:
   paths:
     - $CI_PROJECT_DIR/.m2/repository
 
-cleanup_cache_job:
-  stage: cleanup
-  script:
-    - rm -rf $CI_PROJECT_DIR/.m2/repository
-  when: manual
-
 maven_build_job:
   stage: build
   only:
     changes:
-      - greeting/**/*
+      - hotel/**/*
   script:
     - mvn $MAVEN_CLI_OPTS clean package -DskipTests
   artifacts:
     when: on_success
-    expire_in: 10 min
+    expire_in: 45 min
     paths:
-      - greeting/target/*.jar
+      - hotel/target/*.jar
+
+docker_build_job:
+  variables:
+    DOCKER_DRIVER: overlay2
+  stage: build
+  image: docker:latest
+  services:
+    - name: docker:20.10.2-dind
+  only:
+    changes:
+      - hotel/**/*
+  before_script:
+    - docker login -u ${GITLAB_USER_LOGIN} -p ${CI_TOKEN} ${CI_REGISTRY}
+  script:
+    - docker build -t ${CI_REGISTRY_IMAGE}/hotel -f hotel/Dockerfile .
+    - docker push ${CI_REGISTRY_IMAGE}/hotel
+  after_script:
+    - docker logout ${CI_REGISTRY}
 
 maven_test_job:
   stage: test
   only:
     changes:
-      - greeting/**/*
+      - hotel/**/*
   script:
     - mvn $MAVEN_CLI_OPTS verify -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}
 
@@ -46,7 +57,7 @@ maven_sonar_job:
   stage: test
   only:
     changes:
-      - greeting/**/*
+      - hotel/**/*
   script:
     - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent package sonar:sonar -Dsonar.login=${SONAR_TOKEN} -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}
 
@@ -60,26 +71,6 @@ maven_release_job:
     - git checkout -B ${CI_BUILD_REF_NAME}
     - mvn $MAVEN_CLI_OPTS -s ${MAVEN_SETTINGS_XML} release:clean release:prepare release:perform -DreleaseVersion=${RELEASE_VERSION} -DdevelopmentVersion=${NEXT_SNAPSHOT_VERSION}
   when: manual
-  only:
-    - master
-
-docker_build_job:
-  variables:
-    DOCKER_DRIVER: overlay2
-  stage: build
-  image: docker:latest
-  services:
-    - name: docker:20.10.2-dind
-  only:
-    changes:
-      - greeting/**/*
-  before_script:
-    - docker login -u ${GITLAB_USER_LOGIN} -p ${CI_TOKEN} ${CI_REGISTRY}
-  script:
-    - docker build -t ${CI_REGISTRY_IMAGE}/greeting-webservice -f greeting/Dockerfile .
-    - docker push ${CI_REGISTRY_IMAGE}/greeting-webservice
-  after_script:
-    - docker logout ${CI_REGISTRY}
 
 ssh_deploy_qualification_job:
   stage: deploy
@@ -96,9 +87,36 @@ ssh_deploy_qualification_job:
     - chmod 644 ~/.ssh/known_hosts
   script:
     - ssh ${DEPLOY_USER}@${SSH_REMOTE_HOST} "docker login -u ${GITLAB_USER_LOGIN} -p ${CI_TOKEN} ${CI_REGISTRY}"
-    - ssh ${DEPLOY_USER}@${SSH_REMOTE_HOST} "docker pull ${CI_REGISTRY_IMAGE}/greeting-webservice"
+    - ssh ${DEPLOY_USER}@${SSH_REMOTE_HOST} "docker pull ${CI_REGISTRY_IMAGE}/hotel"
     - ssh ${DEPLOY_USER}$${SSH_REMOTE_HOST} 'docker stop $(docker ps -aq)' || true
-    - ssh ${DEPLOY_USER}@${SSH_REMOTE_HOST} "docker run  --rm -d -p 8080:8080 --name ${APP_NAME} -e SPRING_PROFILES_ACTIVE=${SPRING_ACTIVE_PROFILE} ${CI_REGISTRY_IMAGE}/greeting-webservice"
+    - ssh ${DEPLOY_USER}@${SSH_REMOTE_HOST} "docker run  --rm -d -p 8080:8080 --name ${APP_NAME} -e SPRING_PROFILES_ACTIVE=${SPRING_ACTIVE_PROFILE} ${CI_REGISTRY_IMAGE}/hotel"
+  environment:
+    name: qualification
+    url: http://${SSH_REMOTE_HOST}
+  only:
+    refs:
+      - qualification
+    changes:
+      - hotel/**/*
+
+ssh_deploy_master_job:
+  stage: deploy
+  image: kroniak/ssh-client
+  tags:
+    - production-deploy
+  before_script:
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    - eval $(ssh-agent -s)
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - ssh-keyscan -t rsa ${SSH_REMOTE_HOST} >> ~/.ssh/known_hosts
+    - chmod 644 ~/.ssh/known_hosts
+  script:
+    - ssh ${DEPLOY_USER}@${SSH_REMOTE_HOST} "docker login -u ${GITLAB_USER_LOGIN} -p ${CI_TOKEN} ${CI_REGISTRY}"
+    - ssh ${DEPLOY_USER}@${SSH_REMOTE_HOST} "docker pull ${CI_REGISTRY_IMAGE}/hotel"
+    - ssh ${DEPLOY_USER}$${SSH_REMOTE_HOST} "docker stop $(docker ps -aq)" || true
+    - ssh ${DEPLOY_USER}@${SSH_REMOTE_HOST} "docker run  --rm -d -p 8080:8080 --name ${APP_NAME} -e SPRING_PROFILES_ACTIVE=${SPRING_ACTIVE_PROFILE} ${CI_REGISTRY_IMAGE}/hotel"
   environment:
     name: master
     url: http://${SSH_REMOTE_HOST}
@@ -106,4 +124,4 @@ ssh_deploy_qualification_job:
     refs:
       - master
     changes:
-      - greeting/**/*
+      - hotel/**/*
