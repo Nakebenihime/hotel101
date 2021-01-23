@@ -15,6 +15,8 @@ import java.util.Optional;
 @Service
 public class HotelServiceImpl implements IHotelService {
 
+    private static final String FETCHING_HOTEL_BY_ID = "Fetching hotel with id {}";
+
     private HotelRepository hotelRepository;
 
     @Autowired
@@ -35,7 +37,7 @@ public class HotelServiceImpl implements IHotelService {
 
     @Override
     public Hotel updateById(Hotel hotel, String id) {
-        log.info("Fetching hotel with id {}", id);
+        log.info(FETCHING_HOTEL_BY_ID, id);
         Hotel nhotel = this.hotelRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(String.format("Hotel with id %s could not be found", id)));
         nhotel.setName(hotel.getName());
@@ -47,7 +49,7 @@ public class HotelServiceImpl implements IHotelService {
 
     @Override
     public void deleteById(String id) {
-        log.info("Fetching hotel with id {}", id);
+        log.info(FETCHING_HOTEL_BY_ID, id);
         this.hotelRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(String.format("Hotel with id %s could not be found", id)));
         this.hotelRepository.deleteById(id);
@@ -55,7 +57,7 @@ public class HotelServiceImpl implements IHotelService {
 
     @Override
     public Optional<Hotel> findById(String id) {
-        log.info("Fetching hotel with id {}", id);
+        log.info(FETCHING_HOTEL_BY_ID, id);
         this.hotelRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(String.format("Hotel with id %s could not be found", id)));
         return this.hotelRepository.findById(id);

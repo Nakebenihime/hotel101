@@ -23,7 +23,7 @@ Content-Type: application/json
 GET {{host-url}}//hotels
 
 ### update()
-POST {{host-url}}/hotels/5d986e236bb9813cc0a5149b
+PUT {{host-url}}/hotels/600c6a07d73a547d0ccd2969
 Content-Type: application/json
 
 {
@@ -33,6 +33,10 @@ Content-Type: application/json
     {
       "email": "mario-dacosta@hotmail.fr",
       "rating": 5
+    },
+    {
+      "email": "semir-sator@hotmail.fr",
+      "rating": 4
     }
   ],
   "address": {
@@ -42,7 +46,7 @@ Content-Type: application/json
 }
 
 ### delete()
-DELETE {{host-url}}/hotels/5d986e236bb9813cc0a5149b
+DELETE {{host-url}}/hotels/600c1a108551a77e666ffa99
 
 ### getByHotelId()
 GET {{host-url}}//hotels/5d986e236bb9813cc0a5149b

@@ -180,13 +180,13 @@ public class HotelController {
             value = "/{id}",
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Hotel> update(@Valid @RequestBody Hotel hotel, @Parameter(description = "hotel id") @PathVariable String id) {
+    public ResponseEntity<HotelViewModel> update(@Valid @RequestBody HotelViewModel hotelViewModel, @Parameter(description = "hotel id") @PathVariable String id) {
         log.info("PUT /hotels/{id} :  hotel id {}", id);
-        Hotel persistedHotel = this.hotelService.updateById(hotel, id);
+        Hotel hotel = this.hotelService.updateById(hotelViewModel.toEntity(), id);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(persistedHotel);
+                .body(hotel.toViewModel());
     }
 
     @Operation(
