@@ -2,7 +2,6 @@ spring:
   profiles: qualification
   data:
     mongodb:
-      uri: mongodb+srv://<username>:<password>@clustermongo01.xusit.mongodb.net/hotels-qualification?retryWrites=true&w=majority
       database: hotels-qualification
 server:
   port: 8080

@@ -10,7 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.hotel.model.ApiError;
 import org.hotel.model.Hotel;
-import org.hotel.service.HotelServiceImpl;
+import org.hotel.service.IHotelService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -35,11 +35,11 @@ import java.util.Optional;
 @RequestMapping("${api.uri.paths.hotel}")
 public class HotelController {
 
-    private HotelServiceImpl hotelServiceImpl;
+    private IHotelService hotelService;
 
     @Autowired
-    public void setHotelService(HotelServiceImpl hotelServiceImpl) {
-        this.hotelServiceImpl = hotelServiceImpl;
+    public void setHotelService(IHotelService hotelService) {
+        this.hotelService = hotelService;
     }
 
     @Operation(
@@ -77,7 +77,7 @@ public class HotelController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Hotel> save(@Valid @RequestBody Hotel hotel, UriComponentsBuilder uriComponentsBuilder) {
         log.info("POST /hotels : hotel {}", hotel);
-        Hotel persistedHotel = this.hotelServiceImpl.save(hotel);
+        Hotel persistedHotel = this.hotelService.save(hotel);
         UriComponents uriComponents = uriComponentsBuilder.path("/api/v1/hotels/{id}").buildAndExpand(hotel.getId());
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -106,7 +106,7 @@ public class HotelController {
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<Hotel>> getAllHotels(@PageableDefault(page = 0, size = 5) Pageable pageable) {
         log.info("GET /hotels : pageable: page {}, size {}, sort {}", pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
-        return ResponseEntity.ok(hotelServiceImpl.findAll(pageable));
+        return ResponseEntity.ok(hotelService.findAll(pageable));
     }
 
     @Operation(
@@ -139,7 +139,7 @@ public class HotelController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(this.hotelServiceImpl.findById(id));
+                .body(this.hotelService.findById(id));
     }
 
     @Operation(
@@ -182,7 +182,7 @@ public class HotelController {
             produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Hotel> update(@Valid @RequestBody Hotel hotel, @Parameter(description = "hotel id") @PathVariable String id) {
         log.info("PUT /hotels/{id} :  hotel id {}", id);
-        Hotel persistedHotel = this.hotelServiceImpl.updateById(hotel, id);
+        Hotel persistedHotel = this.hotelService.updateById(hotel, id);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -216,7 +216,7 @@ public class HotelController {
             value = "/{id}")
     public ResponseEntity<Void> deleteHotelById(@Parameter(description = "hotel id") @PathVariable String id) {
         log.info("DELETE /hotels/{id} :  hotel id {}", id);
-        this.hotelServiceImpl.deleteById(id);
+        this.hotelService.deleteById(id);
         return ResponseEntity
                 .status(HttpStatus.NO_CONTENT)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -248,6 +248,6 @@ public class HotelController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(this.hotelServiceImpl.findByPricePerNightBetween(min, max, pageable));
+                .body(this.hotelService.findByPricePerNightBetween(min, max, pageable));
     }
 }
