@@ -46,7 +46,7 @@ Content-Type: application/json
 }
 
 ### delete()
-DELETE {{host-url}}/hotels/600c1a108551a77e666ffa99
+DELETE {{host-url}}/hotels/600c6a07d73a547d0ccd2969
 
 ### getByHotelId()
 GET {{host-url}}//hotels/5d986e236bb9813cc0a5149b

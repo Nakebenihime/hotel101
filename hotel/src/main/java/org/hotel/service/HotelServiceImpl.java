@@ -38,28 +38,30 @@ public class HotelServiceImpl implements IHotelService {
     @Override
     public Hotel updateById(Hotel hotel, String id) {
         log.info(FETCHING_HOTEL_BY_ID, id);
-        Hotel nhotel = this.hotelRepository.findById(id)
+        Hotel updatedHotel = this.hotelRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(String.format("Hotel with id %s could not be found", id)));
-        nhotel.setName(hotel.getName());
-        nhotel.setPricePerNight(hotel.getPricePerNight());
-        nhotel.setAddress(hotel.getAddress());
-        nhotel.setReviews(hotel.getReviews());
-        return this.hotelRepository.save(nhotel);
+        updatedHotel.setName(hotel.getName());
+        updatedHotel.setPricePerNight(hotel.getPricePerNight());
+        updatedHotel.setAddress(hotel.getAddress());
+        updatedHotel.setReviews(hotel.getReviews());
+        return this.hotelRepository.save(updatedHotel);
     }
 
     @Override
     public void deleteById(String id) {
         log.info(FETCHING_HOTEL_BY_ID, id);
-        this.hotelRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException(String.format("Hotel with id %s could not be found", id)));
+        if (this.hotelRepository.findById(id).isEmpty()) {
+            throw new NotFoundException(String.format("Hotel with id %s could not be found", id));
+        }
         this.hotelRepository.deleteById(id);
     }
 
     @Override
     public Optional<Hotel> findById(String id) {
         log.info(FETCHING_HOTEL_BY_ID, id);
-        this.hotelRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException(String.format("Hotel with id %s could not be found", id)));
+        if (this.hotelRepository.findById(id).isEmpty()) {
+            throw new NotFoundException(String.format("Hotel with id %s could not be found", id));
+        }
         return this.hotelRepository.findById(id);
     }
 
