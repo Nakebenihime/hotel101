@@ -1,21 +1,27 @@
-package org.hotel.model;
+package org.hotel.viewmodel;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import org.hotel.viewmodel.AddressViewModel;
+import lombok.NoArgsConstructor;
+import org.hotel.model.Address;
 
 import javax.validation.constraints.NotBlank;
 
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Data
-public class Address {
+public class AddressViewModel {
+
     @NotBlank(message = "City field must not be blank")
     private String city;
+
     @NotBlank(message = "Country field must not be blank")
     private String country;
 
-    public AddressViewModel toViewModel() {
-        return AddressViewModel.builder()
+    public Address toEntity() {
+        return Address.builder()
                 .city(city)
                 .country(country)
                 .build();

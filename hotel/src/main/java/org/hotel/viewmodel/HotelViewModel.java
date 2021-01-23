@@ -1,13 +1,10 @@
-package org.hotel.model;
+package org.hotel.viewmodel;
+
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import org.hotel.viewmodel.HotelViewModel;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.IndexDirection;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
+import org.hotel.model.Hotel;
 
 import javax.validation.Valid;
 import javax.validation.constraints.*;
@@ -18,17 +15,13 @@ import java.util.stream.Collectors;
 @Builder
 @AllArgsConstructor
 @Data
-@Document(collection = "hotels")
-public class Hotel {
+public class HotelViewModel {
 
-    @Id
     private String id;
-
     @NotBlank(message = "Name field is mandatory and must not be blank")
     @Size(min = 2, max = 32, message = "Name must be between 2 and 32 characters long")
     private String name;
 
-    @Indexed(direction = IndexDirection.ASCENDING)
     @NotNull(message = "PricePerNight field is mandatory and must not be blank")
     @Min(value = 1, message = "PricePerNight  must be greater than 1€")
     @Max(value = 1000, message = "PricePerNight must be lesser than 1000€")
@@ -36,22 +29,22 @@ public class Hotel {
 
     @Valid
     @NotNull(message = "Address is mandatory")
-    private Address address;
+    private AddressViewModel address;
 
     @Valid
-    private List<Review> reviews;
+    private List<ReviewViewModel> reviews;
 
-    protected Hotel() {
+    protected HotelViewModel() {
         this.reviews = new ArrayList<>();
     }
 
-    public HotelViewModel toViewModel() {
-        return HotelViewModel.builder()
+    public Hotel toEntity() {
+        return Hotel.builder()
                 .id(id)
                 .name(name)
                 .pricePerNight(pricePerNight)
-                .address(address.toViewModel())
-                .reviews(reviews.stream().map(Review::toViewModel).collect(Collectors.toList()))
+                .address(address.toEntity())
+                .reviews(reviews.stream().map(ReviewViewModel::toEntity).collect(Collectors.toList()))
                 .build();
     }
 }

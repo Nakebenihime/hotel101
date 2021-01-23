@@ -1,7 +1,7 @@
 package org.hotel.exception;
 
 import lombok.extern.slf4j.Slf4j;
-import org.hotel.model.ApiError;
+import org.hotel.viewmodel.ApiError;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;

@@ -1,4 +1,4 @@
-package org.hotel.model;
+package org.hotel.viewmodel;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;

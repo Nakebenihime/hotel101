@@ -8,9 +8,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
-import org.hotel.model.ApiError;
 import org.hotel.model.Hotel;
 import org.hotel.service.IHotelService;
+import org.hotel.viewmodel.ApiError;
+import org.hotel.viewmodel.HotelViewModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -70,20 +71,19 @@ public class HotelController {
                     description = "The request failed. An Error occurred on the server side.",
                     content = @Content(
                             mediaType = MediaType.APPLICATION_JSON_VALUE,
-                            schema = @Schema(implementation = ApiError.class)))
-    })
+                            schema = @Schema(implementation = ApiError.class)))})
     @PostMapping(
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Hotel> save(@Valid @RequestBody Hotel hotel, UriComponentsBuilder uriComponentsBuilder) {
-        log.info("POST /hotels : hotel {}", hotel);
-        Hotel persistedHotel = this.hotelService.save(hotel);
+    public ResponseEntity<HotelViewModel> save(@Valid @RequestBody HotelViewModel hotelViewModel, UriComponentsBuilder uriComponentsBuilder) {
+        log.info("POST /hotels : hotel {}", hotelViewModel);
+        Hotel hotel = this.hotelService.save(hotelViewModel.toEntity());
         UriComponents uriComponents = uriComponentsBuilder.path("/api/v1/hotels/{id}").buildAndExpand(hotel.getId());
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .contentType(MediaType.APPLICATION_JSON)
                 .location(uriComponents.toUri())
-                .body(persistedHotel);
+                .body(hotel.toViewModel());
     }
 
     @Operation(
