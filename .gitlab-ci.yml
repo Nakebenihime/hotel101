@@ -103,7 +103,7 @@ ssh_deploy_qualification_job:
 ssh_deploy_setup_env_job:
   stage: setup_env
   script:
-    - cat ${MASTER_ENV} >> deploy.env
+    - cat "$MASTER_ENV" >> deploy.env
   artifacts:
     reports:
       dotenv:
