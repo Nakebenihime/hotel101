@@ -86,6 +86,7 @@ ssh_deploy_qualification_job:
     - ssh-keyscan -t rsa ${SSH_REMOTE_HOST} >> ~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
   script:
+    -
     - ssh ${DEPLOY_USER}@${SSH_REMOTE_HOST} "docker login -u ${GITLAB_USER_LOGIN} -p ${CI_TOKEN} ${CI_REGISTRY}"
     - ssh ${DEPLOY_USER}@${SSH_REMOTE_HOST} "docker pull ${CI_REGISTRY_IMAGE}/hotel"
     - ssh ${DEPLOY_USER}$${SSH_REMOTE_HOST} 'docker stop $(docker ps -aq)' || true
@@ -98,6 +99,15 @@ ssh_deploy_qualification_job:
       - qualification
     changes:
       - hotel/**/*
+
+ssh_deploy_setup_env_job:
+  stage: setup_env
+  script:
+    - cat ${MASTER_ENV} >> deploy.env
+  artifacts:
+    reports:
+      dotenv:
+        - deploy.env
 
 ssh_deploy_master_job:
   stage: deploy
@@ -116,7 +126,10 @@ ssh_deploy_master_job:
     - ssh ${DEPLOY_USER}@${SSH_REMOTE_HOST} "docker login -u ${GITLAB_USER_LOGIN} -p ${CI_TOKEN} ${CI_REGISTRY}"
     - ssh ${DEPLOY_USER}@${SSH_REMOTE_HOST} "docker pull ${CI_REGISTRY_IMAGE}/hotel"
     - ssh ${DEPLOY_USER}$${SSH_REMOTE_HOST} "docker stop $(docker ps -aq)" || true
-    - ssh ${DEPLOY_USER}@${SSH_REMOTE_HOST} "docker run  --rm -d -p 8080:8080 --name ${APP_NAME} --env-file ${ENV_VAR} ${CI_REGISTRY_IMAGE}/hotel"
+    - ssh ${DEPLOY_USER}@${SSH_REMOTE_HOST} "docker run  --rm -d -p 8080:8080 --name ${APP_NAME} --env-file deploy.env ${CI_REGISTRY_IMAGE}/hotel"
+  needs:
+    - job: setup_env
+      artifacts: true
   environment:
     name: master
     url: http://${SSH_REMOTE_HOST}
