@@ -9,4 +9,4 @@
 - BUILD DOCKER IMAGE
     docker build -t hotel -f hotel\Dockerfile || hotel/Dockerfile .
 - RUN DOCKER IMAGE
-    docker run --rm --name hotel -p 8080:8080 -e SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE} -it hotel
+    docker run --rm --name hotel -p 8080:8080 --env-file master.env -it hotel

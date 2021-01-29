@@ -22,8 +22,8 @@ api:
       hotel: /api/v1/hotels
 azure:
   keyvault:
-    uri: https://springboot-app-key-vault.vault.azure.net/
-    client-id: 547f8ce7-61a4-4853-8984-6569c8046235
-    client-key: 691d-AQh2f9_P.qFFJLMKESivz0Tr0e1GC
-    tenant-id: 9a201292-e579-4be6-a754-74a17631711a
+    uri: ${AZURE_KEYVAULT_URI}
+    client-id: ${AZURE_KEYVAULT_CLIENT_ID}
+    client-key: ${AZURE_KEYVAULT_CLIENT_KEY}
+    tenant-id: ${AZURE_KEYVAULT_TENANT_ID}
     enabled: true

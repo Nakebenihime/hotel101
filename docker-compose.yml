@@ -1,0 +1,19 @@
+version: '3.7'
+services:
+  hotel:
+    env_file:
+      - master.env
+    build:
+      context: ./hotel
+      dockerfile: Dockerfile
+    hostname: hotel-serv
+    container_name: hotel-serv
+    image: hotel
+    restart: always
+    ports:
+      - 8080:8080
+    environment:
+      - AZURE_KEYVAULT_URI=${AZURE_KEYVAULT_URI}
+      - AZURE_KEYVAULT_CLIENT_ID=${AZURE_KEYVAULT_CLIENT_ID}
+      - AZURE_KEYVAULT_CLIENT_KEY=${AZURE_KEYVAULT_CLIENT_KEY}
+      - AZURE_KEYVAULT_TENANT_ID=${AZURE_KEYVAULT_TENANT_ID}
