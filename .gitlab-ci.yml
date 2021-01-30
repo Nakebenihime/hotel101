@@ -40,7 +40,8 @@ docker_build_job:
   before_script:
     - docker login -u ${GITLAB_USER_LOGIN} -p ${CI_TOKEN} ${CI_REGISTRY}
   script:
-    - docker build -t ${CI_REGISTRY_IMAGE}/hotel -f hotel/Dockerfile .
+    - docker pull ${CI_REGISTRY_IMAGE}/hotel:latest || true
+    - docker build --cache-from  ${CI_REGISTRY_IMAGE}/hotel:latest -t ${CI_REGISTRY_IMAGE}/hotel -f hotel/Dockerfile .
     - docker push ${CI_REGISTRY_IMAGE}/hotel
   after_script:
     - docker logout ${CI_REGISTRY}
