@@ -30,6 +30,8 @@ maven_build_job:
 docker_build_job:
   variables:
     DOCKER_DRIVER: overlay2
+    DOCKER_HOTEL_IMAGE: ${CI_REGISTRY_IMAGE}/hotel
+    DOCKER_HOTEL_CONTEXT: hotel/Dockerfile
   stage: build
   image: docker:latest
   services:
@@ -40,9 +42,13 @@ docker_build_job:
   before_script:
     - docker login -u ${GITLAB_USER_LOGIN} -p ${CI_TOKEN} ${CI_REGISTRY}
   script:
-    - docker pull ${CI_REGISTRY_IMAGE}/hotel:latest || true
-    - docker build --cache-from  ${CI_REGISTRY_IMAGE}/hotel:latest -t ${CI_REGISTRY_IMAGE}/hotel -f hotel/Dockerfile .
-    - docker push ${CI_REGISTRY_IMAGE}/hotel
+    - docker pull ${DOCKER_HOTEL_IMAGE}:latest || true
+    - docker build
+      --cache-from ${DOCKER_HOTEL_IMAGE}:latest
+      --tag ${DOCKER_HOTEL_IMAGE}:latest
+      --tag ${DOCKER_HOTEL_IMAGE}:${CI_COMMIT_SHORT_SHA} -f ${DOCKER_HOTEL_CONTEXT} .
+    - docker push ${DOCKER_HOTEL_IMAGE}:${CI_COMMIT_SHORT_SHA}
+    - docker push ${DOCKER_HOTEL_IMAGE}:latest
   after_script:
     - docker logout ${CI_REGISTRY}
 
@@ -78,6 +84,8 @@ ssh_deploy_qualification_job:
   image: kroniak/ssh-client
   tags:
     - qualification-deploy
+  variables:
+    DOCKER_HOTEL_IMAGE: ${CI_REGISTRY_IMAGE}/hotel
   before_script:
     - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
     - eval $(ssh-agent -s)
@@ -88,9 +96,9 @@ ssh_deploy_qualification_job:
     - chmod 644 ~/.ssh/known_hosts
   script:
     - ssh ${DEPLOY_USER}@${SSH_REMOTE_HOST} "docker login -u ${GITLAB_USER_LOGIN} -p ${CI_TOKEN} ${CI_REGISTRY}"
-    - ssh ${DEPLOY_USER}@${SSH_REMOTE_HOST} "docker pull ${CI_REGISTRY_IMAGE}/hotel"
+    - ssh ${DEPLOY_USER}@${SSH_REMOTE_HOST} "docker pull ${DOCKER_HOTEL_IMAGE}"
     - ssh ${DEPLOY_USER}@${SSH_REMOTE_HOST} 'docker stop $(docker ps -aq)' || true
-    - ssh ${DEPLOY_USER}@${SSH_REMOTE_HOST} "docker run  --rm -d -p 8080:8080 --name ${APP_NAME} ${CI_REGISTRY_IMAGE}/hotel"
+    - ssh ${DEPLOY_USER}@${SSH_REMOTE_HOST} "docker run  --rm -d -p 8080:8080 --name ${APP_NAME} ${DOCKER_HOTEL_IMAGE}"
   environment:
     name: qualification
     url: http://${SSH_REMOTE_HOST}
@@ -105,6 +113,8 @@ ssh_deploy_master_job:
   image: kroniak/ssh-client
   tags:
     - production-deploy
+  variables:
+    DOCKER_HOTEL_IMAGE: ${CI_REGISTRY_IMAGE}/hotel
   before_script:
     - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
     - eval $(ssh-agent -s)
@@ -114,11 +124,10 @@ ssh_deploy_master_job:
     - ssh-keyscan -t rsa ${SSH_REMOTE_HOST} >> ~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
   script:
-    - cp ${MASTER_ENV} $CI_PROJECT_DIR/.env
     - ssh ${DEPLOY_USER}@${SSH_REMOTE_HOST} "docker login -u ${GITLAB_USER_LOGIN} -p ${CI_TOKEN} ${CI_REGISTRY}"
-    - ssh ${DEPLOY_USER}@${SSH_REMOTE_HOST} "docker pull ${CI_REGISTRY_IMAGE}/hotel"
-    - ssh ${DEPLOY_USER}@${SSH_REMOTE_HOST} "docker stop $(docker ps -aq)" || true
-    - ssh ${DEPLOY_USER}@${SSH_REMOTE_HOST} "docker run  --rm -d -p 8080:8080 --name ${APP_NAME} --env-file $CI_PROJECT_DIR/.env ${CI_REGISTRY_IMAGE}/hotel"
+    - ssh ${DEPLOY_USER}@${SSH_REMOTE_HOST} "docker pull ${DOCKER_HOTEL_IMAGE}"
+    - ssh ${DEPLOY_USER}@${SSH_REMOTE_HOST} 'docker stop $(docker ps -aq)' || true
+    - ssh ${DEPLOY_USER}@${SSH_REMOTE_HOST} "docker run  --rm -d -p 8080:8080 --name ${APP_NAME} --env-file $CI_PROJECT_DIR/.env ${DOCKER_HOTEL_IMAGE}"
   environment:
     name: master
     url: http://${SSH_REMOTE_HOST}
