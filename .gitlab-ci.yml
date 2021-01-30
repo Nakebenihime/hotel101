@@ -100,15 +100,6 @@ ssh_deploy_qualification_job:
     changes:
       - hotel/**/*
 
-ssh_deploy_setup_env_job:
-  stage: setup_env
-  script:
-    - cat "$MASTER_ENV" >> deploy.env
-  artifacts:
-    reports:
-      dotenv:
-        - deploy.env
-
 ssh_deploy_master_job:
   stage: deploy
   image: kroniak/ssh-client
@@ -122,6 +113,7 @@ ssh_deploy_master_job:
     - chmod 700 ~/.ssh
     - ssh-keyscan -t rsa ${SSH_REMOTE_HOST} >> ~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
+    - cat "{MASTER_ENV} >> deploy.env
   script:
     - ssh ${DEPLOY_USER}@${SSH_REMOTE_HOST} "docker login -u ${GITLAB_USER_LOGIN} -p ${CI_TOKEN} ${CI_REGISTRY}"
     - ssh ${DEPLOY_USER}@${SSH_REMOTE_HOST} "docker pull ${CI_REGISTRY_IMAGE}/hotel"
