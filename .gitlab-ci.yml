@@ -20,12 +20,29 @@ maven_build_job:
     changes:
       - hotel/**/*
   script:
-    - mvn $MAVEN_CLI_OPTS clean package -DskipTests
+    - mvn $MAVEN_CLI_OPTS clean install -DskipTests
   artifacts:
     when: on_success
     expire_in: 45 min
     paths:
       - hotel/target/*.jar
+
+jfrog_deploy_job:
+  stage: build
+  only:
+    refs:
+      - master
+    changes:
+      - hotel/**/*
+  before_script:
+    # install Jfrog CLI
+    - curl -fL https://getcli.jfrog.io | sh
+    - ./jfrog rt c cloud-jfrog-artifactory --url $ARTIFACTORY_URL --user $ARTIFACTORY_USER --apikey $ARTIFACTORY_API_KEY
+    - ./jfrog rt c show
+  script:
+    - ./jfrog rt mvn --settings ${MAVEN_SETTINGS_XML} clean install --build-name=gitlabci-hotel101-artifactory --build-number=$CI_JOB_ID
+    - ./jfrog rt bce gitlabci-hotel101-artifactory $CI_JOB_ID
+    - ./jfrog rt bp gitlabci-hotel101-artifactory $CI_JOB_ID
 
 docker_build_job:
   variables:

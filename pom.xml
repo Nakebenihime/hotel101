@@ -96,8 +96,20 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
+
+    <distributionManagement>
+        <repository>
+            <id>central</id>
+            <name>a0nuri78aai13-artifactory-primary-0-releases</name>
+            <url>https://nakebenihime.jfrog.io/artifactory/hotel101</url>
+        </repository>
+        <snapshotRepository>
+            <id>snapshots</id>
+            <name>a0nuri78aai13-artifactory-primary-0-snapshots</name>
+            <url>https://nakebenihime.jfrog.io/artifactory/hotel101</url>
+        </snapshotRepository>
+    </distributionManagement>
 
     <build>
         <plugins>
@@ -114,5 +126,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>

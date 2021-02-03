@@ -2,7 +2,7 @@ version: '3.7'
 services:
   hotel:
     env_file:
-      - master.env
+      - .env
     build:
       context: ./hotel
       dockerfile: Dockerfile
