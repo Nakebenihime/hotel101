@@ -39,7 +39,7 @@ jfrog_deploy_job:
     - curl -fL https://getcli.jfrog.io | sh
     - ./jfrog rt c artifactory-maven-dev-local --url $ARTIFACTORY_URL --user $ARTIFACTORY_USER --apikey $ARTIFACTORY_API_KEY
     - ./jfrog rt c show
-    - ./jfrog rt mvnc --server-id-deploy artifactory-maven-dev-local --repo-deploy-releases libs-release-local --repo-deploy-snapshots libs-snapshot-local
+    - ./jfrog rt mvnc --server-id-deploy artifactory-maven-dev-local --repo-deploy-releases artifactory-maven-dev-local --repo-deploy-snapshots artifactory-maven-dev-local
     - export M2_HOME=/usr/share/maven
   script:
     - ./jfrog rt mvn clean install --build-name=gitlabci-hotel101-artifactory --build-number=$CI_JOB_ID
