@@ -102,12 +102,12 @@
         <repository>
             <id>central</id>
             <name>a0nuri78aai13-artifactory-primary-0-releases</name>
-            <url>https://nakebenihime.jfrog.io/artifactory/hotel101</url>
+            <url>https://nakebenihime.jfrog.io/artifactory/artifactory-maven-dev-local</url>
         </repository>
         <snapshotRepository>
             <id>snapshots</id>
             <name>a0nuri78aai13-artifactory-primary-0-snapshots</name>
-            <url>https://nakebenihime.jfrog.io/artifactory/hotel101</url>
+            <url>https://nakebenihime.jfrog.io/artifactory/artifactory-maven-dev-local</url>
         </snapshotRepository>
     </distributionManagement>
 
