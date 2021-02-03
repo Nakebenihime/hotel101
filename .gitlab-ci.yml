@@ -41,7 +41,7 @@ jfrog_deploy_job:
     - ./jfrog rt c show
     - ./jfrog rt mvnc --server-id-resolve cloud-jfrog-artifactory --server-id-deploy cloud-jfrog-artifactory --repo-resolve-releases libs-release --repo-resolve-snapshots libs-snapshot --repo-deploy-releases libs-snapshot-local --repo-deploy-snapshots libs-release-local
   script:
-    - ./jfrog rt mvn clean install --build-name=gitlabci-hotel101-artifactory --build-number=$CI_JOB_ID
+    - ./jfrog rt mvn clean install -f ./pom.xml --build-name=gitlabci-hotel101-artifactory --build-number=$CI_JOB_ID
     - ./jfrog rt bce gitlabci-hotel101-artifactory $CI_JOB_ID
     - ./jfrog rt bp gitlabci-hotel101-artifactory $CI_JOB_ID
 
