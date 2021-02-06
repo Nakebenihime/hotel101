@@ -122,7 +122,7 @@ ssh_deploy_qualification_job:
     - chmod 644 ~/.ssh/known_hosts
   script:
     - ssh ${SSH_DEPLOY_USER}@${SSH_REMOTE_HOST} "docker login -u ${GITLAB_USER_LOGIN} -p ${CI_TOKEN} ${CI_REGISTRY} && docker pull ${DOCKER_HOTEL_IMAGE}"
-    - ssh ${SSH_DEPLOY_USER}@${SSH_REMOTE_HOST} "docker container stop $(docker container ls -q -f name=${APPLICATION_NAME})" || true
+    - ssh ${SSH_DEPLOY_USER}@${SSH_REMOTE_HOST} "docker stop ${APPLICATION_NAME}" || true
     - ssh ${SSH_DEPLOY_USER}@${SSH_REMOTE_HOST} "docker run --rm -d -p 8080:8080 --name ${APPLICATION_NAME} --env-file .env ${DOCKER_HOTEL_IMAGE}"
   environment:
     name: qualification
@@ -149,7 +149,7 @@ ssh_deploy_master_job:
     - chmod 644 ~/.ssh/known_hosts
   script:
     - ssh ${SSH_DEPLOY_USER}@${SSH_REMOTE_HOST} "docker login -u ${GITLAB_USER_LOGIN} -p ${CI_TOKEN} ${CI_REGISTRY} && docker pull ${DOCKER_HOTEL_IMAGE}"
-    - ssh ${SSH_DEPLOY_USER}@${SSH_REMOTE_HOST} "docker container stop $(docker container ls -q -f name=${APPLICATION_NAME})" || true
+    - ssh ${SSH_DEPLOY_USER}@${SSH_REMOTE_HOST} "docker stop ${APPLICATION_NAME}" || true
     - ssh ${SSH_DEPLOY_USER}@${SSH_REMOTE_HOST} "docker run --rm -d -p 8080:8080 --name ${APPLICATION_NAME} --env-file .env ${DOCKER_HOTEL_IMAGE}"
   environment:
     name: master
