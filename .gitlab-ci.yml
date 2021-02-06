@@ -1,10 +1,10 @@
 image: maven:3.6.3-jdk-11-slim
 stages:
+  - release
   - build_maven
   - build_jfrog_artifactory
   - test
   - build_push_docker_registry
-  - release
   - deploy
 
 variables:
@@ -15,6 +15,20 @@ variables:
 cache:
   paths:
     - $CI_PROJECT_DIR/.m2/repository
+
+maven_release_job:
+  stage: release
+  before_script:
+    - 'which git || (apt-get update && apt-get install -y git)'
+    - git config --global user.name ${RELEASE_USER_NAME}
+    - git config --global user.email ${RELEASE_USER_EMAIL}
+  script:
+    - git checkout -B ${CI_BUILD_REF_NAME}
+    - mvn $MAVEN_CLI_OPTS -s ${MAVEN_SETTINGS_XML} release:clean release:prepare release:perform -DreleaseVersion=${RELEASE_VERSION} -DdevelopmentVersion=${NEXT_SNAPSHOT_VERSION}
+  when: manual
+  only:
+    refs:
+      - master
 
 maven_build_job:
   stage: build_maven
@@ -86,20 +100,14 @@ docker_build_job:
   after_script:
     - docker logout ${CI_REGISTRY}
 
-maven_release_job:
-  stage: release
-  before_script:
-    - 'which git || (apt-get update && apt-get install -y git)'
-    - git config --global user.name ${RELEASE_USER_NAME}
-    - git config --global user.email ${RELEASE_USER_EMAIL}
-  script:
-    - git checkout -B ${CI_BUILD_REF_NAME}
-    - mvn $MAVEN_CLI_OPTS -s ${MAVEN_SETTINGS_XML} release:clean release:prepare release:perform -DreleaseVersion=${RELEASE_VERSION} -DdevelopmentVersion=${NEXT_SNAPSHOT_VERSION}
-  when: manual
-
 ssh_deploy_qualification_job:
   stage: deploy
   image: kroniak/ssh-client
+  only:
+    refs:
+      - qualification
+    changes:
+      - hotel/**/*
   tags:
     - qualification-deploy
   variables:
@@ -114,16 +122,11 @@ ssh_deploy_qualification_job:
     - chmod 644 ~/.ssh/known_hosts
   script:
     - ssh ${SSH_DEPLOY_USER}@${SSH_REMOTE_HOST} "docker login -u ${GITLAB_USER_LOGIN} -p ${CI_TOKEN} ${CI_REGISTRY} && docker pull ${DOCKER_HOTEL_IMAGE}"
-    - ssh ${SSH_DEPLOY_USER}@${SSH_REMOTE_HOST} "docker container stop $(docker container ls -q -f name=${APPLICATION_NAME})" || true
-    - ssh ${SSH_DEPLOY_USER}@${SSH_REMOTE_HOST} "docker run  --rm -d -p 8080:8080 --name ${APPLICATION_NAME} --env-file .env ${DOCKER_HOTEL_IMAGE}"
+    - ssh ${SSH_DEPLOY_USER}@${SSH_REMOTE_HOST} 'docker container stop $(docker container ls -q -f name=${APPLICATION_NAME})' || true
+    - ssh ${SSH_DEPLOY_USER}@${SSH_REMOTE_HOST} "docker run --rm -d -p 8080:8080 --name ${APPLICATION_NAME} --env-file .env ${DOCKER_HOTEL_IMAGE}"
   environment:
     name: qualification
     url: http://${SSH_REMOTE_HOST}
-  only:
-    refs:
-      - qualification
-    changes:
-      - hotel/**/*
 
 ssh_deploy_master_job:
   stage: deploy
@@ -142,13 +145,14 @@ ssh_deploy_master_job:
     - chmod 644 ~/.ssh/known_hosts
   script:
     - ssh ${SSH_DEPLOY_USER}@${SSH_REMOTE_HOST} "docker login -u ${GITLAB_USER_LOGIN} -p ${CI_TOKEN} ${CI_REGISTRY} && docker pull ${DOCKER_HOTEL_IMAGE}"
-    - ssh ${SSH_DEPLOY_USER}@${SSH_REMOTE_HOST} "docker container stop $(docker container ls -q -f name=${APPLICATION_NAME})" || true
-    - ssh ${SSH_DEPLOY_USER}@${SSH_REMOTE_HOST} "docker run  --rm -d -p 8080:8080 --name ${APPLICATION_NAME} --env-file .env ${DOCKER_HOTEL_IMAGE}"
+    - ssh ${SSH_DEPLOY_USER}@${SSH_REMOTE_HOST} 'docker container stop $(docker container ls -q -f name=${APPLICATION_NAME})' || true
+    - ssh ${SSH_DEPLOY_USER}@${SSH_REMOTE_HOST} "docker run --rm -d -p 8080:8080 --name ${APPLICATION_NAME} --env-file .env ${DOCKER_HOTEL_IMAGE}"
   environment:
     name: master
     url: http://${SSH_REMOTE_HOST}
   only:
-    refs:
-      - master
+    - tags
+  except:
+    - branches
     changes:
       - hotel/**/*
