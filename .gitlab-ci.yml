@@ -131,6 +131,10 @@ ssh_deploy_qualification_job:
 ssh_deploy_master_job:
   stage: deploy
   image: kroniak/ssh-client
+  only:
+    - tags
+  except:
+    - branches
   tags:
     - production-deploy
   variables:
@@ -150,7 +154,3 @@ ssh_deploy_master_job:
   environment:
     name: master
     url: http://${SSH_REMOTE_HOST}
-  only:
-    - tags
-  except:
-    - branches
