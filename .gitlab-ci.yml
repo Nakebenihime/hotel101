@@ -29,7 +29,7 @@ maven_build_job:
     paths:
       - hotel/target/*.jar
 
-jfrog_deploy_job:
+jfrog_build_job:
   stage: build_jfrog_artifactory
   only:
     changes:
@@ -43,7 +43,7 @@ jfrog_deploy_job:
   script:
     - ./jfrog rt mvn clean install --build-name=${JFROG_ARTIFACTORY_BUILD_NAME} --build-number=${CI_JOB_ID}
     - ./jfrog rt bce ${JFROG_ARTIFACTORY_BUILD_NAME} ${CI_JOB_ID}
-    - ./jfrog rt bp ${JFROG_ARTIFACTORY_BUILD_NAME} ${CI_JOB_ID} --env-include "*KEY*;*TOKEN*;SSH*"
+    - ./jfrog rt bp ${JFROG_ARTIFACTORY_BUILD_NAME} ${CI_JOB_ID} --env-exclude "*KEY*;*TOKEN*;SSH*"
 
 maven_test_job:
   stage: test
