@@ -1,3 +1,20 @@
+management:
+  info:
+    build:
+      enabled: true
+    git:
+      enabled: true
+    env:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus, metrics
+  endpoint:
+    prometheus:
+      enabled: true
+    metrics:
+      enabled: true
 spring:
   profiles: master
   data:

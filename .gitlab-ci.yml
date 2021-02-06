@@ -1,7 +1,9 @@
 image: maven:3.6.3-jdk-11-slim
 stages:
-  - build
+  - build_maven
+  - build_jfrog_artifactory
   - test
+  - build_push_docker_registry
   - release
   - deploy
 
@@ -15,7 +17,7 @@ cache:
     - $CI_PROJECT_DIR/.m2/repository
 
 maven_build_job:
-  stage: build
+  stage: build_maven
   only:
     changes:
       - hotel/**/*
@@ -28,30 +30,43 @@ maven_build_job:
       - hotel/target/*.jar
 
 jfrog_deploy_job:
-  stage: build
+  stage: deploy_jfrog_artifactory
   only:
-    refs:
-      - master
     changes:
       - hotel/**/*
   before_script:
-    # install Jfrog CLI
     - curl -fL https://getcli.jfrog.io | sh
-    - ./jfrog rt c artifactory-maven-dev-local --url $ARTIFACTORY_URL --user $ARTIFACTORY_USER --apikey $ARTIFACTORY_API_KEY
+    - ./jfrog rt c ${JFROG_ARTIFACTORY_REPO} --url ${JFROG_ARTIFACTORY_URL} --user ${JFROG_ARTIFACTORY_USER} --apikey ${JFROG_ARTIFACTORY_API_KEY}
     - ./jfrog rt c show
-    - ./jfrog rt mvnc --server-id-deploy artifactory-maven-dev-local --repo-deploy-releases artifactory-maven-dev-local --repo-deploy-snapshots artifactory-maven-dev-local
+    - ./jfrog rt mvnc --server-id-deploy ${JFROG_ARTIFACTORY_REPO} --repo-deploy-releases ${JFROG_ARTIFACTORY_REPO} --repo-deploy-snapshots ${JFROG_ARTIFACTORY_REPO}
     - export M2_HOME=/usr/share/maven
   script:
-    - ./jfrog rt mvn clean install --build-name=gitlabci-hotel101-artifactory --build-number=$CI_JOB_ID
-    - ./jfrog rt bce gitlabci-hotel101-artifactory $CI_JOB_ID
-    - ./jfrog rt bp gitlabci-hotel101-artifactory $CI_JOB_ID
+    - ./jfrog rt mvn clean install --build-name=${JFROG_ARTIFACTORY_BUILD_NAME} --build-number=${CI_JOB_ID}
+    - ./jfrog rt bce ${JFROG_ARTIFACTORY_BUILD_NAME} ${CI_JOB_ID}
+    - ./jfrog rt bp ${JFROG_ARTIFACTORY_BUILD_NAME} ${CI_JOB_ID} --env-include "*KEY*;*TOKEN*;SSH*"
+
+maven_test_job:
+  stage: test
+  only:
+    changes:
+      - hotel/**/*
+  script:
+    - mvn $MAVEN_CLI_OPTS verify -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}
+
+maven_sonar_job:
+  stage: test
+  only:
+    changes:
+      - hotel/**/*
+  script:
+    - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent package sonar:sonar -Dsonar.login=${SONAR_KEY} -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}
 
 docker_build_job:
   variables:
     DOCKER_DRIVER: overlay2
     DOCKER_HOTEL_IMAGE: ${CI_REGISTRY_IMAGE}/hotel
     DOCKER_HOTEL_CONTEXT: hotel/Dockerfile
-  stage: build
+  stage: build_push_docker_registry
   image: docker:latest
   services:
     - name: docker:20.10.2-dind
@@ -70,22 +85,6 @@ docker_build_job:
     - docker push ${DOCKER_HOTEL_IMAGE}:latest
   after_script:
     - docker logout ${CI_REGISTRY}
-
-maven_test_job:
-  stage: test
-  only:
-    changes:
-      - hotel/**/*
-  script:
-    - mvn $MAVEN_CLI_OPTS verify -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}
-
-maven_sonar_job:
-  stage: test
-  only:
-    changes:
-      - hotel/**/*
-  script:
-    - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent package sonar:sonar -Dsonar.login=${SONAR_TOKEN} -Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}
 
 maven_release_job:
   stage: release
@@ -114,10 +113,9 @@ ssh_deploy_qualification_job:
     - ssh-keyscan -t rsa ${SSH_REMOTE_HOST} >> ~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
   script:
-    - ssh ${DEPLOY_USER}@${SSH_REMOTE_HOST} "docker login -u ${GITLAB_USER_LOGIN} -p ${CI_TOKEN} ${CI_REGISTRY}"
-    - ssh ${DEPLOY_USER}@${SSH_REMOTE_HOST} "docker pull ${DOCKER_HOTEL_IMAGE}"
-    - ssh ${DEPLOY_USER}@${SSH_REMOTE_HOST} "docker stop $(docker ps -aq)" || true
-    - ssh ${DEPLOY_USER}@${SSH_REMOTE_HOST} "docker run  --rm -d -p 8080:8080 --name ${APP_NAME} --env-file .env ${DOCKER_HOTEL_IMAGE}"
+    - ssh ${SSH_DEPLOY_USER}@${SSH_REMOTE_HOST} "docker login -u ${GITLAB_USER_LOGIN} -p ${CI_TOKEN} ${CI_REGISTRY} && docker pull ${DOCKER_HOTEL_IMAGE}"
+    - ssh ${SSH_DEPLOY_USER}@${SSH_REMOTE_HOST} "docker container stop $(docker container ls -q -f name=${APPLICATION_NAME})" || true
+    - ssh ${SSH_DEPLOY_USER}@${SSH_REMOTE_HOST} "docker run  --rm -d -p 8080:8080 --name ${APPLICATION_NAME} --env-file .env ${DOCKER_HOTEL_IMAGE}"
   environment:
     name: qualification
     url: http://${SSH_REMOTE_HOST}
@@ -143,10 +141,9 @@ ssh_deploy_master_job:
     - ssh-keyscan -t rsa ${SSH_REMOTE_HOST} >> ~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
   script:
-    - ssh ${DEPLOY_USER}@${SSH_REMOTE_HOST} "docker login -u ${GITLAB_USER_LOGIN} -p ${CI_TOKEN} ${CI_REGISTRY}"
-    - ssh ${DEPLOY_USER}@${SSH_REMOTE_HOST} "docker pull ${DOCKER_HOTEL_IMAGE}"
-    - ssh ${DEPLOY_USER}@${SSH_REMOTE_HOST} "docker stop $(docker ps -aq)" || true
-    - ssh ${DEPLOY_USER}@${SSH_REMOTE_HOST} "docker run  --rm -d -p 8080:8080 --name ${APP_NAME} --env-file .env ${DOCKER_HOTEL_IMAGE}"
+    - ssh ${SSH_DEPLOY_USER}@${SSH_REMOTE_HOST} "docker login -u ${GITLAB_USER_LOGIN} -p ${CI_TOKEN} ${CI_REGISTRY} && docker pull ${DOCKER_HOTEL_IMAGE}"
+    - ssh ${SSH_DEPLOY_USER}@${SSH_REMOTE_HOST} "docker container stop $(docker container ls -q -f name=${APPLICATION_NAME})" || true
+    - ssh ${SSH_DEPLOY_USER}@${SSH_REMOTE_HOST} "docker run  --rm -d -p 8080:8080 --name ${APPLICATION_NAME} --env-file .env ${DOCKER_HOTEL_IMAGE}"
   environment:
     name: master
     url: http://${SSH_REMOTE_HOST}

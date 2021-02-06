@@ -6,8 +6,8 @@ services:
     build:
       context: ./hotel
       dockerfile: Dockerfile
-    hostname: hotel-serv
-    container_name: hotel-serv
+    hostname: hotel
+    container_name: hotel
     image: hotel
     restart: always
     ports:
