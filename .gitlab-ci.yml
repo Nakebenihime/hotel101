@@ -49,7 +49,7 @@ jfrog_build_job:
       - hotel/**/*
   before_script:
     - curl -fL https://getcli.jfrog.io | sh
-    - ./jfrog rt c ${JFROG_ARTIFACTORY_REPO} --url=${JFROG_ARTIFACTORY_URL} --user=${JFROG_ARTIFACTORY_USER} --apikey=${JFROG_ARTIFACTORY_API_KEY}
+    - ./jfrog rt c ${JFROG_ARTIFACTORY_REPO} --url ${JFROG_ARTIFACTORY_URL} --user ${JFROG_ARTIFACTORY_USER} --apikey ${JFROG_ARTIFACTORY_API_KEY} --interactive=false
     - ./jfrog rt c show
     - ./jfrog rt mvnc --server-id-deploy ${JFROG_ARTIFACTORY_REPO} --repo-deploy-releases ${JFROG_ARTIFACTORY_REPO} --repo-deploy-snapshots ${JFROG_ARTIFACTORY_REPO}
     - export M2_HOME=/usr/share/maven
