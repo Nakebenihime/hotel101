@@ -13,7 +13,7 @@
     </parent>
     <groupId>org</groupId>
     <artifactId>hotel101</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>0.0.1-SNAPSHOT</version>
     <name>hotel101</name>
     <description>Hotel API is a web service providing online hotel search and booking functionalities.</description>
 
@@ -35,7 +35,6 @@
         <connection>scm:git:https://gitlab.com/Nakebenihime/hotel101.git</connection>
         <url>https://gitlab.com/Nakebenihime/hotel101</url>
         <developerConnection>scm:git:https://gitlab.com/Nakebenihime/hotel101.git</developerConnection>
-      <tag>HEAD</tag>
   </scm>
 
     <dependencies>
@@ -127,7 +126,7 @@
                 <artifactId>maven-release-plugin</artifactId>
                 <version>3.0.0-M1</version>
                 <configuration>
-                    <tagNameFormat>v@{project.version}</tagNameFormat>
+                    <tagNameFormat>@{project.version}</tagNameFormat>
                     <goals>install</goals>
                     <arguments>-DskipTests</arguments>
                     <scmCommentPrefix>[skip ci] [maven-release-plugin]</scmCommentPrefix>

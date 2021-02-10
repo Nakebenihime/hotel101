@@ -1,8 +1,7 @@
 image: maven:3.6.3-jdk-11-slim
 stages:
   - release
-  - build_maven
-  - build_jfrog_artifactory
+  - build
   - test
   - build_push_docker_registry
   - deploy
@@ -31,7 +30,7 @@ maven_release_job:
       - master
 
 maven_build_job:
-  stage: build_maven
+  stage: build
   only:
     changes:
       - hotel/**/*
@@ -44,13 +43,13 @@ maven_build_job:
       - hotel/target/*.jar
 
 jfrog_build_job:
-  stage: build_jfrog_artifactory
+  stage: build
   only:
     changes:
       - hotel/**/*
   before_script:
     - curl -fL https://getcli.jfrog.io | sh
-    - ./jfrog rt c ${JFROG_ARTIFACTORY_REPO} --url ${JFROG_ARTIFACTORY_URL} --user ${JFROG_ARTIFACTORY_USER} --apikey ${JFROG_ARTIFACTORY_API_KEY}
+    - ./jfrog rt c ${JFROG_ARTIFACTORY_REPO} --url=${JFROG_ARTIFACTORY_URL} --user=${JFROG_ARTIFACTORY_USER} --apikey=${JFROG_ARTIFACTORY_API_KEY}
     - ./jfrog rt c show
     - ./jfrog rt mvnc --server-id-deploy ${JFROG_ARTIFACTORY_REPO} --repo-deploy-releases ${JFROG_ARTIFACTORY_REPO} --repo-deploy-snapshots ${JFROG_ARTIFACTORY_REPO}
     - export M2_HOME=/usr/share/maven
